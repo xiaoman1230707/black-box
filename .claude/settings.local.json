@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep:*)",
+      "Bash(pg_isready -h localhost -p 5432)",
+      "Bash(tasklist)",
+      "Bash(npx prisma:*)",
+      "Bash(pnpm start:dev:*)",
+      "Bash(ls node_modules/.pnpm/@nestjs+cli@11.0.16*/node_modules/@nestjs/cli/commands/)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm approve-builds:*)",
+      "Bash(pnpm rebuild:*)",
+      "Bash(pnpm config:*)",
+      "Read(//d D:/code/black_box/frontend/**)",
+      "Bash(pnpm dev:*)",
+      "Bash(curl -s http://localhost:3000/api/posts)",
+      "Bash(curl:*)",
+      "Bash(psql:*)",
+      "Bash(node:*)",
+      "Bash(node_modules/.bin/prisma db:*)",
+      "Bash(python -m json.tool)",
+      "Bash(netstat -ano)",
+      "Bash(taskkill /F /IM node.exe)",
+      "Bash(grep -rn \"0:\\\\\\\\|text:\\\\\\\\|data:\" \"/d/code/black_box/frontend/black_box/node_modules/.pnpm/@ai-sdk+ui-utils@1.2.11_zod@4.3.6/node_modules/@ai-sdk/ui-utils/dist/\")",
+      "Bash(grep -n \"parseDataStreamPart\\\\|dataStreamParts\\\\|0:\\\\\\\\|text:\" \"/d/code/black_box/frontend/black_box/node_modules/.pnpm/@ai-sdk+ui-utils@1.2.11_zod@4.3.6/node_modules/@ai-sdk/ui-utils/dist/index.js\")",
+      "Bash(grep *)",
+      "Bash(rm -f D:/code/black_box/frontend/black_box/src/pages/Order.tsx)",
+      "Bash(rm -f D:/code/black_box/frontend/black_box/src/components/KeepAliveOrder.tsx)",
+      "Bash(dir \"D:\\\\code\\\\black_box\\\\backend\\\\backend\\\\posts\\\\src\\\\ai\")",
+      "Bash(dir \"D:\\\\code\\\\black_box\\\\backend\\\\backend\\\\posts\\\\src\\\\posts\")",
+      "Bash(taskkill //PID 14172 //F)",
+      "Bash(taskkill //PID 39300 //F)",
+      "Bash(npx tsx *)",
+      "Bash(git init *)",
+      "Bash(git add *)"
+    ]
+  }
+}

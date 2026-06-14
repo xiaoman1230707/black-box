@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm build *)",
+      "Bash(pnpm dev *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/api/auth/login -X POST -H \"Content-Type: application/json\" -d '{\"name\":\"test\",\"password\":\"test\"}')",
+      "Read(//d/code/black_box/backend/backend/posts/**)",
+      "Bash(pnpm start:dev)",
+      "Bash(curl *)"
+    ]
+  }
+}
