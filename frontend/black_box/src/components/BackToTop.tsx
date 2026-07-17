@@ -1,6 +1,7 @@
 import {
     useEffect,
-    useState
+    useState,
+    type FC,
 } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowUp } from 'lucide-react';
@@ -11,9 +12,14 @@ interface BackToTopProps {
     threshold?: number;
 }
 
-const BackToTop:React.FC<BackToTopProps> = ({threshold=100})=>{
+const BackToTop:FC<BackToTopProps> = ({threshold=100})=>{
     const [isVisible,setIsVisible] = useState<boolean>(false);
     const scrollTop = ()=>{
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+            return;
+        }
         window.scrollTo({
             top:0,
             behavior:'smooth'
@@ -38,10 +44,11 @@ const BackToTop:React.FC<BackToTopProps> = ({threshold=100})=>{
         variant="outline"
         size="icon"
         onClick={scrollTop}
-        className='fixed bottom-6 right-6 rounded-full 
-        shadow-lg hover:shadow-xl z-50'
+        className="fixed right-[var(--container-gutter-tablet)] bottom-[var(--container-gutter-tablet)] z-50 rounded-pill max-[760px]:right-[var(--container-gutter-phone)] max-[760px]:bottom-[calc(var(--bottombar-h)+env(safe-area-inset-bottom)+var(--container-gutter-phone))]"
+        aria-label="返回顶部"
+        title="返回顶部"
         >
-            <ArrowUp className='h-4 w-4' />
+            <ArrowUp className='h-4 w-4' aria-hidden="true" />
         </Button>
     )
 } 

@@ -1,99 +1,167 @@
-import {
-    useRef,// 持久化存储对象，dom对象的引用
-    useEffect,
-    useState
-} from 'react';
-// 第三方库 自动滚动播放
+import { useEffect, useRef, useState, type FC } from 'react';
 import Autoplay from 'embla-carousel-autoplay';
 import {
-    CarouselContent,
-    CarouselItem,
-    type CarouselApi,
-    Carousel,// 轮播图
-} from "@/components/ui/carousel"
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi,
+} from '@/components/ui/carousel';
+import { cn } from '@/lib/utils';
 
 export interface SlideData {
-    id:number | string;
-    image:string;
-    title?:string;
-}
-interface SlideShowProps{
-    slides:SlideData[];
-    autoPlay?:boolean;// 是否自动播放
-    autoPlayDelay?:number;// 自动播放间隔时间
+  id: number | string;
+  image: string;
+  title?: string;
 }
 
-const SlideShow:React.FC<SlideShowProps> = ({
-    slides,
-    autoPlay=true,
-    autoPlayDelay=3000
-})=>{
-    const [selectedIndex,setSelectedIndex] = useState<number>(0);
-    const [api,setApi] = useState<CarouselApi | null>(null);
-    useEffect(()=>{
-        // console.log(api,'????')
-        if(!api) return;
-        const onSelect = ()=> setSelectedIndex(api.selectedScrollSnap());
-        api.on('select',onSelect);
-        return () => {api.off('select',onSelect)};
-    },[api])
+interface SlideShowProps {
+  slides: SlideData[];
+  autoPlay?: boolean;
+  autoPlayDelay?: number;
+}
 
-    // Autoplay 耗费性能 不需要再任何响应式更新时都重新创建
-    const plugin = useRef(
-        autoPlay? Autoplay({delay:autoPlayDelay,stopOnInteraction:false}) : null
-    );// stopOnInteraction: true 的含义就是：只要用户有任何交互（点击、拖动、滑动），就永久停止自动播放
-    return(
-        <div className="relative w-full">
-            <Carousel className='w-full'
-            setApi={setApi}
-            plugins={plugin.current?[plugin.current]:[]}
-            opts={{loop:true}}
-            onMouseEnter={()=>plugin.current?.stop()}
-            onMouseLeave={()=>plugin.current?.reset()}
+const COVER_CLASSES = [
+  'bg-[image:var(--gradient-cv-1)]',
+  'bg-[image:var(--gradient-cv-2)]',
+  'bg-[image:var(--gradient-cv-3)]',
+  'bg-[image:var(--gradient-cv-4)]',
+] as const;
+
+const SlideShow: FC<SlideShowProps> = ({
+  slides,
+  autoPlay = true,
+  autoPlayDelay = 3000,
+}) => {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [api, setApi] = useState<CarouselApi | null>(null);
+  const [failedImages, setFailedImages] = useState<Set<string>>(() => new Set());
+  const reducedMotionAtMount =
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const plugin = useRef(
+    autoPlay
+      ? Autoplay({
+          delay: autoPlayDelay,
+          stopOnInteraction: false,
+          playOnInit: !reducedMotionAtMount,
+        })
+      : null
+  );
+
+  useEffect(() => {
+    if (!api) return;
+    const onSelect = () => setSelectedIndex(api.selectedScrollSnap());
+    onSelect();
+    api.on('select', onSelect);
+    return () => {
+      api.off('select', onSelect);
+    };
+  }, [api]);
+
+  useEffect(() => {
+    if (!api) return;
+    const autoplay = api.plugins().autoplay;
+    if (!autoplay) return;
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const syncAutoplay = () => {
+      if (media.matches) autoplay.stop();
+      else autoplay.play();
+    };
+    syncAutoplay();
+    media.addEventListener('change', syncAutoplay);
+    return () => media.removeEventListener('change', syncAutoplay);
+  }, [api]);
+
+  const handleImageError = (image: string) => {
+    setFailedImages((current) => {
+      const next = new Set(current);
+      next.add(image);
+      return next;
+    });
+  };
+
+  const handleMouseLeave = () => {
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      api?.plugins().autoplay?.reset();
+    }
+  };
+
+  return (
+    <div className="relative w-full overflow-hidden rounded-lg border-2 border-ink bg-card shadow-lg">
+      <Carousel
+        className="w-full"
+        setApi={setApi}
+        plugins={plugin.current ? [plugin.current] : []}
+        opts={{ loop: true }}
+        onMouseEnter={() => api?.plugins().autoplay?.stop()}
+        onMouseLeave={handleMouseLeave}
+      >
+        <CarouselContent className="ml-0">
+          {slides.map(({ id, image, title }, index) => {
+            const imageFailed = failedImages.has(image);
+            return (
+              <CarouselItem key={id} className="pl-0">
+                <div
+                  className={cn(
+                    'relative aspect-video w-full overflow-hidden bg-muted',
+                    imageFailed && COVER_CLASSES[index % COVER_CLASSES.length]
+                  )}
+                >
+                  {!imageFailed ? (
+                    <img
+                      src={image}
+                      alt={title || `轮播图 ${index + 1}`}
+                      className="h-full w-full object-cover"
+                      onError={() => handleImageError(image)}
+                    />
+                  ) : (
+                    <div className="grid h-full place-items-center px-8 text-center text-xl font-extrabold text-primary-foreground">
+                      {title || '玩家社区'}
+                    </div>
+                  )}
+                  {title && !imageFailed ? (
+                    <div className="absolute inset-x-0 top-0 bg-foreground/85 px-4 py-3 text-primary-foreground sm:top-auto sm:bottom-0 sm:px-6 sm:pt-4 sm:pb-14">
+                      <h3 className="line-clamp-2 break-words text-base leading-heading font-extrabold sm:max-w-[calc(100%-6rem)] sm:text-xl">
+                        {title}
+                      </h3>
+                    </div>
+                  ) : null}
+                </div>
+              </CarouselItem>
+            );
+          })}
+        </CarouselContent>
+        {slides.length > 1 ? (
+          <>
+            <CarouselPrevious />
+            <CarouselNext />
+          </>
+        ) : null}
+      </Carousel>
+
+      {slides.length > 1 ? (
+        <div className="absolute inset-x-14 bottom-0 z-10 flex justify-center gap-2">
+          {slides.map((slide, index) => (
+            <button
+              key={slide.id}
+              type="button"
+              data-state={selectedIndex === index ? 'active' : 'inactive'}
+              onClick={() => api?.scrollTo(index)}
+              className="group grid size-11 shrink-0 place-items-center rounded-pill outline-none focus-visible:[box-shadow:var(--focus-ring)]"
+              aria-label={`切换到第 ${index + 1} 张`}
+              aria-current={selectedIndex === index ? 'true' : undefined}
             >
-                <CarouselContent>
-                   {
-                    slides.map(({id,image,title},index)=>(
-                       <CarouselItem key={id}>
-                         <div className="relative aspect-[16/9] w-full rounded-xl overflow-hidden">
-                            <img 
-                            src={image}
-                            alt={title || `slide ${index + 1}` }//没有图片 默认
-                            className="w-full h-full object-cover"
-                            />
-                            {
-                                title && (
-                                    <div 
-                                    className="absolute bottom-0 left-0 right-0 
-                                    bg-gradient-to-t from-black/60 to-transparent
-                                    p-4 text-white">
-                                        <h3 className="text-lg font-bold">{title}</h3>
-                                    </div>
-                                )
-                            }
-                        </div>
-                       </CarouselItem>
-                    ))
-                   }
-                </CarouselContent>
-            </Carousel>
-            <div className="absolute bottom-3 left-0 right-0 flex
-            justify-center gap-2
-            ">
-                {
-                    // i index 重要状态 _ 占位，用不到。但是作为map参数 一定要出席
-                    slides.map((_,i)=>(
-                        <button key={i}
-                        className={`h-2 w-2 rounded-full transition-all 
-                            ${selectedIndex === i ? "bg-white w-6" : "bg-white/30"}`}
-                        />
-                    ))
-                }
-            </div>
+              <span
+                aria-hidden="true"
+                className="h-2.5 w-2.5 rounded-pill border border-primary-foreground bg-foreground/45 transition-[width,background-color] duration-(--motion-fast) group-data-[state=active]:w-7 group-data-[state=active]:bg-primary motion-reduce:transition-none"
+              />
+            </button>
+          ))}
         </div>
-    )
-}
+      ) : null}
+    </div>
+  );
+};
 
-export default  SlideShow;
-
-
+export default SlideShow;

@@ -1,15 +1,21 @@
+import './config/load-env';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 // 将nestjs像express一样拥有一些服务
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';// 自动校验后转类型
 import { join } from 'path'; // 路径拼接 node内置模块
+import { validateEnvironment } from './config/env';
+import { createCorsOptions } from './config/cors-options';
 
 async function bootstrap() {
+  const env = validateEnvironment('runtime');
   // 底座是基于express 
-  const app = await NestFactory.create<NestExpressApplication>(AppModule,{
-    cors:true, // 开启跨域
-  });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.enableCors(createCorsOptions(env.frontendOrigin));
+  if (env.trustProxy === 'loopback') {
+    app.set('trust proxy', 'loopback');
+  }
   app.setGlobalPrefix('api');// 设置全局路由前缀 /api
   // 启用全局验证管道 ，基于express
   app.useGlobalPipes(new ValidationPipe({
@@ -21,6 +27,6 @@ async function bootstrap() {
   app.useStaticAssets(join(process.cwd(),'uploads'),{
     prefix:'/uploads',
   })// 静态资源目录
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(env.port);
 }
 bootstrap();

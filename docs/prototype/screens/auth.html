@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>登录 / 注册 · GG 玩家社区</title>
+<link rel="stylesheet" href="../css/system.css" />
+<style>
+  /* 登录/注册 整屏分栏布局 */
+  .auth { min-height:100vh; display:grid; grid-template-columns:1.05fr .95fr; }
+
+  /* 左：品牌面板 */
+  .auth-aside {
+    position:relative; overflow:hidden; color:#fff;
+    background:linear-gradient(135deg,#ff6b00,#ff3d81 58%,#6a5cff);
+    border-right:2px solid var(--fg);
+    padding:clamp(32px,5vw,64px);
+    display:flex; flex-direction:column; justify-content:space-between; gap:var(--space-8);
+  }
+  .auth-aside::after { content:""; position:absolute; inset:0;
+    background:radial-gradient(120% 80% at 100% 0%, rgba(255,255,255,.18), transparent 60%); }
+  .auth-aside > * { position:relative; z-index:1; }
+  .auth-aside .brand { color:#fff; margin:0; }
+  .auth-aside .brand-mark { background:#fff; color:var(--accent); box-shadow:3px 3px 0 rgba(0,0,0,.35); }
+  .auth-pitch h1 { font-size:clamp(32px,4vw,52px); font-weight:900; line-height:1.04; }
+  .auth-pitch p { margin-top:var(--space-4); font-size:var(--text-lg); max-width:30ch; opacity:.95; }
+  .auth-feats { display:flex; flex-direction:column; gap:var(--space-4); }
+  .auth-feat { display:flex; align-items:center; gap:var(--space-3); font-weight:600; }
+  .auth-feat .ico { width:38px; height:38px; flex-shrink:0; display:grid; place-items:center;
+    background:rgba(255,255,255,.16); border:2px solid #fff; border-radius:var(--radius-sm); font-size:18px; }
+  .auth-stat { display:flex; gap:var(--space-8); }
+  .auth-stat b { font-size:var(--text-2xl); font-weight:900; display:block; line-height:1; }
+  .auth-stat span { font-size:var(--text-xs); opacity:.9; }
+
+  /* 右：表单面板 */
+  .auth-main { display:flex; align-items:center; justify-content:center; padding:clamp(28px,5vw,56px); }
+  .auth-card { width:100%; max-width:420px; }
+  .auth-back { display:inline-flex; align-items:center; gap:6px; font-size:var(--text-sm); font-weight:700; color:var(--muted); margin-bottom:var(--space-6); }
+  .auth-back:hover { color:var(--accent); }
+  .auth-back svg { width:16px; height:16px; }
+
+  .seg { display:flex; background:var(--surface-warm); border:2px solid var(--fg); border-radius:var(--radius-pill); padding:4px; box-shadow:3px 3px 0 var(--fg); margin-bottom:var(--space-6); }
+  .seg button { flex:1; padding:9px 0; border-radius:var(--radius-pill); font-weight:800; font-size:var(--text-sm); color:var(--fg-2); transition:background var(--motion-fast), color var(--motion-fast); }
+  .seg button.active { background:var(--accent); color:#fff; box-shadow:2px 2px 0 var(--fg); }
+
+  .auth-form { display:none; flex-direction:column; gap:var(--space-4); }
+  .auth-form.active { display:flex; animation:auth-in .28s var(--ease-standard) both; }
+  @keyframes auth-in { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+  .pw-wrap { position:relative; }
+  .pw-wrap .input { padding-right:46px; }
+  .pw-toggle { position:absolute; right:10px; top:50%; transform:translateY(-50%); width:30px; height:30px; display:grid; place-items:center; color:var(--muted); border-radius:8px; }
+  .pw-toggle:hover { color:var(--accent); }
+  .pw-toggle svg { width:18px; height:18px; }
+
+  .row-opts { display:flex; align-items:center; justify-content:space-between; font-size:var(--text-sm); }
+  .check { display:inline-flex; align-items:center; gap:8px; font-weight:600; cursor:pointer; }
+  .check input { width:18px; height:18px; accent-color:var(--accent); }
+  .link-accent { color:var(--accent); font-weight:700; }
+  .link-accent:hover { text-decoration:underline; }
+
+  .strength { display:flex; gap:5px; margin-top:-2px; }
+  .strength i { height:5px; flex:1; border-radius:99px; background:var(--border); transition:background var(--motion-fast); }
+  .strength[data-level="1"] i:nth-child(1){ background:var(--danger); }
+  .strength[data-level="2"] i:nth-child(-n+2){ background:var(--warn); }
+  .strength[data-level="3"] i:nth-child(-n+3){ background:var(--success); }
+
+  .auth-foot { text-align:center; font-size:var(--text-sm); color:var(--muted); margin-top:var(--space-2); }
+
+  @media (max-width:860px) {
+    .auth { grid-template-columns:1fr; }
+    .auth-aside { display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="auth" data-od-id="auth">
+
+  <!-- ░ 左：品牌面板 ░ -->
+  <aside class="auth-aside" data-od-id="auth-brand">
+    <div class="brand"><span class="brand-mark">GG</span><span>玩家社区</span></div>
+
+    <div class="auth-pitch">
+      <h1>登录，加入<br>所有玩家的主场</h1>
+      <p>资讯、攻略、求助、评测、活动——一个账号，畅玩整个社区。</p>
+      <div class="auth-feats" style="margin-top:var(--space-8)">
+        <div class="auth-feat"><span class="ico">🧭</span>收藏攻略、追更你关注的大神</div>
+        <div class="auth-feat"><span class="ico">🤖</span>解锁专属 AI 攻略助手对话</div>
+        <div class="auth-feat"><span class="ico">🏆</span>发帖参赛，赢取限定奖励</div>
+      </div>
+    </div>
+
+    <div class="auth-stat">
+      <div><b>120万+</b><span>注册玩家</span></div>
+      <div><b>38万+</b><span>攻略帖子</span></div>
+      <div><b>4.9</b><span>社区评分</span></div>
+    </div>
+  </aside>
+
+  <!-- ░ 右：表单面板 ░ -->
+  <main class="auth-main" data-od-id="auth-form">
+    <div class="auth-card">
+      <a class="auth-back" href="home.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m15 18-6-6 6-6"/></svg>返回首页</a>
+
+      <!-- 登录 / 注册 切换 -->
+      <div class="seg" role="tablist">
+        <button class="active" data-tab="login" role="tab">登录</button>
+        <button data-tab="register" role="tab">注册</button>
+      </div>
+
+      <!-- 登录表单 -->
+      <form class="auth-form active" data-panel="login" onsubmit="event.preventDefault();location.href='home.html'">
+        <div class="field">
+          <label for="l-acc">邮箱 / 手机号</label>
+          <input class="input" id="l-acc" type="text" placeholder="you@example.com" autocomplete="username" />
+        </div>
+        <div class="field">
+          <label for="l-pw">密码</label>
+          <div class="pw-wrap">
+            <input class="input" id="l-pw" type="password" placeholder="输入密码" autocomplete="current-password" />
+            <button type="button" class="pw-toggle" data-pw aria-label="显示密码"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+        </div>
+        <div class="row-opts">
+          <label class="check"><input type="checkbox" checked />记住我</label>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit" style="padding:14px">登录</button>
+        <p class="auth-foot">还没有账号？<a class="link-accent" href="#" data-goto="register">立即注册</a></p>
+      </form>
+
+      <!-- 注册表单 -->
+      <form class="auth-form" data-panel="register" onsubmit="event.preventDefault();location.href='edit-profile.html'">
+        <div class="field">
+          <label for="r-name">昵称</label>
+          <input class="input" id="r-name" type="text" placeholder="给自己起个游戏 ID" autocomplete="nickname" />
+        </div>
+        <div class="field">
+          <label for="r-acc">邮箱</label>
+          <input class="input" id="r-acc" type="email" placeholder="you@example.com" autocomplete="email" />
+        </div>
+        <div class="field">
+          <label for="r-pw">密码</label>
+          <div class="pw-wrap">
+            <input class="input" id="r-pw" type="password" placeholder="至少 8 位，含字母与数字" autocomplete="new-password" data-strength />
+            <button type="button" class="pw-toggle" data-pw aria-label="显示密码"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+          <div class="strength" data-strength-bar><i></i><i></i><i></i></div>
+        </div>
+        <div class="field">
+          <label for="r-pw2">确认密码</label>
+          <input class="input" id="r-pw2" type="password" placeholder="再次输入密码" autocomplete="new-password" />
+        </div>
+        <label class="check" style="font-size:var(--text-sm)"><input type="checkbox" />我已阅读并同意<a class="link-accent" href="#">《用户协议》</a>与<a class="link-accent" href="#">《隐私政策》</a></label>
+        <button class="btn btn-primary btn-block" type="submit" style="padding:14px">创建账号</button>
+        <p class="auth-foot">已有账号？<a class="link-accent" href="#" data-goto="login">直接登录</a></p>
+      </form>
+    </div>
+  </main>
+</div>
+
+<script>
+  /* Tab 切换：登录 / 注册 */
+  const seg = document.querySelector('.seg');
+  const panels = document.querySelectorAll('.auth-form');
+  function showTab(name) {
+    seg.querySelectorAll('button').forEach((b) => b.classList.toggle('active', b.dataset.tab === name));
+    panels.forEach((p) => p.classList.toggle('active', p.dataset.panel === name));
+  }
+  seg.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) showTab(b.dataset.tab); });
+  document.addEventListener('click', (e) => { const g = e.target.closest('[data-goto]'); if (g) { e.preventDefault(); showTab(g.dataset.goto); } });
+
+  /* 密码显隐 */
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-pw]');
+    if (!t) return;
+    const inp = t.parentElement.querySelector('input');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    t.style.color = inp.type === 'text' ? 'var(--accent)' : '';
+  });
+
+  /* 密码强度提示 */
+  const pw = document.querySelector('[data-strength]');
+  const bar = document.querySelector('[data-strength-bar]');
+  pw?.addEventListener('input', () => {
+    const v = pw.value; let s = 0;
+    if (v.length >= 8) s++;
+    if (/[a-zA-Z]/.test(v) && /\d/.test(v)) s++;
+    if (/[^a-zA-Z0-9]/.test(v) || v.length >= 12) s++;
+    bar.dataset.level = v ? Math.max(1, s) : 0;
+  });
+</script>
+</body>
+</html>

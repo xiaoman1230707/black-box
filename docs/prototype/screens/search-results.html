@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>搜索：星轨边境 · GG 玩家社区</title>
+<link rel="stylesheet" href="../css/system.css" />
+<style>
+  /* 搜索结果页专属增量样式 */
+  .search-head { display:flex; flex-direction:column; gap:var(--space-2); }
+  .search-head .q { color:var(--accent); }
+  .hl { background:var(--surface-warm); color:var(--fg); padding:0 3px; border-radius:4px; box-decoration-break:clone; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ░░ 侧边导航 ░░ -->
+  <aside class="sidebar" data-od-id="sidebar">
+    <div class="brand"><span class="brand-mark">GG</span><span>玩家社区</span></div>
+    <a class="nav-link active" href="home.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg><span>首页</span></a>
+    <a class="nav-link" href="chatbot.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 16 0Z"/></svg><span>攻略助手</span></a>
+    <a class="nav-link" href="compose.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg><span>发帖</span></a>
+    <a class="nav-link" href="profile.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span>我的</span></a>
+    <div class="nav-sep"></div>
+    <div class="nav-foot">
+      <a class="nav-user" href="profile.html">
+        <span class="avatar avatar-md cv-4">阿</span>
+        <span class="nav-user-meta"><strong style="display:block;font-size:13px">阿岚</strong><span style="font-size:11px;color:var(--muted)">Lv.18 · 攻略组</span></span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ░░ 主区 ░░ -->
+  <main class="main">
+    <!-- 搜索栏（带返回首页 + 已填关键词） -->
+    <header class="topbar" data-od-id="topbar">
+      <div class="container row">
+        <form class="search" action="search-results.html" method="get" style="max-width:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="search" name="q" value="星轨边境" placeholder="搜索游戏、攻略、玩家或话题…" />
+          <kbd class="search-kbd">⏎ 搜索</kbd>
+        </form>
+      </div>
+    </header>
+
+    <div class="container page-pad stack" style="gap:var(--space-8)">
+
+      <!-- ░ 搜索摘要 ░ -->
+      <section data-od-id="search-summary" class="search-head">
+        <p class="eyebrow">搜索结果</p>
+        <h1 class="h-lg">关于 “<span class="q">星轨边境</span>” 找到 <span data-result-count>6</span> 篇帖子</h1>
+        <p class="muted" style="font-size:var(--text-sm)">按相关度排序 · 约 0.18 秒 · 可按下方标签筛选</p>
+      </section>
+
+      <!-- ░ 标签分类筛选 ░ -->
+      <section data-od-id="scopes" class="stack" style="gap:var(--space-6)">
+        <!-- 内容类型筛选（复用全站 tag 过滤逻辑） -->
+        <div class="tagbar" data-tagbar>
+          <button class="tag-chip active" data-tag="all">全部</button>
+          <button class="tag-chip pill-news" data-tag="news">📰 资讯</button>
+          <button class="tag-chip" data-tag="guide">🧭 攻略</button>
+          <button class="tag-chip" data-tag="help">🆘 求助</button>
+          <button class="tag-chip" data-tag="review">⭐ 评测</button>
+          <button class="tag-chip" data-tag="event">🎉 活动</button>
+        </div>
+      </section>
+
+      <!-- ░ 帖子结果 ░ -->
+      <section class="post-grid" data-od-id="results">
+
+        <!-- 1 资讯 -->
+        <article class="post-card" data-tags="news">
+          <a class="post-cover cv-1" href="post-detail.html"><span class="cover-tag pill pill-news">📰 资讯</span><span class="cover-emoji">🚀</span></a>
+          <div class="post-body">
+            <a href="post-detail.html"><h3 class="post-title">《<span class="hl">星轨边境</span>》2.0 版本前瞻：开放大世界与跨平台存档同步正式落地</h3></a>
+            <p class="post-preview">官方放出 12 分钟实机演示，确认无缝大地图、动态天气与载具改装系统。逐帧拆解发布会里 9 个最值得关注的改动……</p>
+            <div class="post-foot">
+              <span class="post-author"><span class="avatar cv-1">星</span>星轨情报站</span>
+              <div class="post-stats">
+                <button class="stat-btn" data-like><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9Z"/></svg><span data-count>2.4k</span></button>
+                <span class="stat-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 16 0Z"/></svg>318</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- 2 攻略 -->
+        <article class="post-card" data-tags="guide">
+          <a class="post-cover cv-7" href="post-detail.html"><span class="cover-tag pill pill-guide">🧭 攻略</span><span class="cover-emoji">🗺️</span></a>
+          <div class="post-body">
+            <a href="post-detail.html"><h3 class="post-title">《<span class="hl">星轨边境</span>》开放世界资源点全标注：稀有矿、隐藏箱与传送塔一图流</h3></a>
+            <p class="post-preview">把 120 平方公里地图按区域切成 7 张分图，标注 214 个资源点与采集冷却。附前期最该优先解锁的 5 座传送塔路线规划……</p>
+            <div class="post-foot">
+              <span class="post-author"><span class="avatar cv-7">图</span>边境制图师</span>
+              <div class="post-stats">
+                <button class="stat-btn" data-like><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9Z"/></svg><span data-count>4.8k</span></button>
+                <span class="stat-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 16 0Z"/></svg>503</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- 3 求助 -->
+        <article class="post-card" data-tags="help">
+          <a class="post-cover cv-4" href="post-detail.html"><span class="cover-tag pill pill-help">🆘 求助</span><span class="cover-emoji">☁️</span></a>
+          <div class="post-body">
+            <a href="post-detail.html"><h3 class="post-title">《<span class="hl">星轨边境</span>》跨平台存档同步一直卡在 99%，主机和 PC 进度对不上怎么办？</h3></a>
+            <p class="post-preview">PS5 上打到第 7 章，切到 PC 却只同步到第 3 章。重登、重连云端都试过无效。附错误码 SYNC-0x19 与同步日志截图，求遇到过的朋友支招……</p>
+            <div class="post-foot">
+              <span class="post-author"><span class="avatar cv-4">迁</span>跨平台迁徙者</span>
+              <div class="post-stats">
+                <button class="stat-btn" data-like><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9Z"/></svg><span data-count>241</span></button>
+                <span class="stat-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 16 0Z"/></svg>112</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- 4 评测 -->
+        <article class="post-card" data-tags="review">
+          <a class="post-cover cv-6" href="post-detail.html"><span class="cover-tag pill pill-review">⭐ 评测</span><span class="cover-emoji">🌌</span></a>
+          <div class="post-body">
+            <a href="post-detail.html"><h3 class="post-title">玩透 2.0 后的真心话：《<span class="hl">星轨边境</span>》把「开放世界」做成了能呼吸的样子</h3></a>
+            <p class="post-preview">大地图不再是任务清单堆砌，动态天气和势力博弈让每次出门都有意外。本文从核心循环、探索密度到性能优化，给一份 60 小时长测……</p>
+            <div class="post-foot">
+              <span class="post-author"><span class="avatar cv-6">长</span>长测老兵</span>
+              <div class="post-stats">
+                <button class="stat-btn" data-like><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9Z"/></svg><span data-count>3.1k</span></button>
+                <span class="stat-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 16 0Z"/></svg>377</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- 5 攻略 -->
+        <article class="post-card" data-tags="guide">
+          <a class="post-cover cv-3" href="post-detail.html"><span class="cover-tag pill pill-guide">🧭 攻略</span><span class="cover-emoji">🏎️</span></a>
+          <div class="post-body">
+            <a href="post-detail.html"><h3 class="post-title">《<span class="hl">星轨边境</span>》载具改装 Top5 配装：越野、竞速、装甲三流派搭配思路</h3></a>
+            <p class="post-preview">新增的改装系统看似复杂，其实抓住引擎、悬挂、护甲三项就够用。给出三套即抄即用配装单，以及刷改装件最快的两条循环路线……</p>
+            <div class="post-foot">
+              <span class="post-author"><span class="avatar cv-3">扳</span>扳手狂魔</span>
+              <div class="post-stats">
+                <button class="stat-btn" data-like><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9Z"/></svg><span data-count>2.7k</span></button>
+                <span class="stat-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 16 0Z"/></svg>264</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- 6 活动 -->
+        <article class="post-card" data-tags="event">
+          <a class="post-cover cv-2" href="post-detail.html"><span class="cover-tag pill pill-event">🎉 活动</span><span class="cover-emoji">🎆</span></a>
+          <div class="post-body">
+            <a href="post-detail.html"><h3 class="post-title">《<span class="hl">星轨边境</span>》2.0 上线庆典：登录领限定涂装，社区任务解锁全服奖励</h3></a>
+            <p class="post-preview">活动持续两周，每日登录可累积「星轨币」兑换限定载具涂装。全服共建进度条满格后解锁隐藏剧情副本，本文整理高效肝活动的每日清单……</p>
+            <div class="post-foot">
+              <span class="post-author"><span class="avatar cv-2">庆</span>官方活动组</span>
+              <div class="post-stats">
+                <button class="stat-btn" data-like><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9Z"/></svg><span data-count>1.6k</span></button>
+                <span class="stat-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 16 0Z"/></svg>289</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+      </section>
+
+      <p class="feed-end" data-feed-end>· 没有更多结果了，换个关键词试试 ·</p>
+    </div>
+  </main>
+</div>
+<script src="../js/app.js"></script>
+</body>
+</html>

@@ -1,11 +1,9 @@
 import { useUserStore } from '@/store/useUserStore'
+import { API_BASE_URL } from '@/config/runtime'
 import axios from 'axios';
 // 接口地址都以/api开头 
-// axios.defaults.baseURL = 'http://localhost:5173/api'
-// axios.defaults.baseURL = 'http://localhost:3000/api'
 const instance = axios.create({
-  // baseURL: 'http://localhost:5173/api',
-  baseURL: 'http://localhost:3000/api',
+  baseURL: API_BASE_URL,
 })
 // 拦截器 interceptors
 // axios api 请求大管家 关于请求的椅子都会给我们
@@ -32,7 +30,8 @@ instance.interceptors.request.use(config => {
 let isRefreshing = false;
 // 请求队列，用来存储等待刷新token时 并发的请求
 // 等到刷新token成功后，再带上新的token依次执行这些请求
-let requestsQueue: any[] = [];
+type PendingRequest = (token: string) => void
+let requestsQueue: PendingRequest[] = [];
 instance.interceptors.response.use(res => {
   // console.log('111');
   // if (res.status != 200) {
@@ -47,7 +46,7 @@ instance.interceptors.response.use(res => {
     const { config, response } = err;
     // console.log(config,response);
     // retry 用来标记时候是重复的请求，避免死循环
-    if (response.status == 401 && !config._retry) {
+    if (response?.status == 401 && config && !config._retry) {
       // 即使 A 请求设置了 A.config._retry = true，
       // B 和 C 请求仍然会各自有自己的 config 对象，它们的 _retry 还是 undefined，所以也会进来。
       if (isRefreshing) {
@@ -101,4 +100,4 @@ instance.interceptors.response.use(res => {
     return Promise.reject(err);
   })
 
-export default instance 
+export default instance

@@ -2,8 +2,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import {
-  doLogin,
-  getAiAvatar
+  doLogin
 } from '@/api/user'
 import type { User } from '@/types/index'
 import type { Credentail } from '@/types/index';
@@ -15,8 +14,16 @@ interface UserState {
   isLogin: boolean;
   login: (credentials: Credentail) => Promise<void>;
   logout: () => void;
-  aiAvatar: () => Promise<void>;
+  setAvatar: (url: string) => void;
 }
+
+type LegacyUser = Omit<User, 'id'> & { id: number | string };
+
+const normalizeUser = (user: LegacyUser | null | undefined): User | null => {
+  if (!user) return null;
+  const id = Number(user.id);
+  return Number.isSafeInteger(id) && id > 0 ? { ...user, id } : null;
+};
 
 // 高阶函数 柯里化
 export const useUserStore = create<UserState>()(
@@ -32,7 +39,7 @@ export const useUserStore = create<UserState>()(
       set({
         accessToken: data.access_token,
         refreshToken: data.refresh_token,
-        user: data.user,
+        user: normalizeUser(data.user),
         isLogin: true
       })
       // console.log(data, '////');
@@ -45,15 +52,10 @@ export const useUserStore = create<UserState>()(
         isLogin:false,
       })
     },
-    aiAvatar:async ()=>{
-      // coze title desc 生成应用的logo
-      const name = get().user?.name;
-      const avatar = await getAiAvatar(name || '');
+    // 二期:头像上传成功后更新 user.avatar(persist 自动持久化),头像即时刷新
+    setAvatar:(url)=>{
       set({
-        user: get().user ? {
-          ...get().user!,
-          avatar
-        } : null
+        user: get().user ? { ...get().user!, avatar: url } : null
       })
     }
   }), {
@@ -63,6 +65,18 @@ export const useUserStore = create<UserState>()(
       refreshToken: state.refreshToken,
       user: state.user,
       isLogin: state.isLogin
-    })
+    }),
+    merge: (persistedState, currentState) => {
+      const persisted = persistedState as Partial<UserState> & {
+        user?: LegacyUser | null;
+      };
+      const user = normalizeUser(persisted.user);
+      return {
+        ...currentState,
+        ...persisted,
+        user,
+        isLogin: persisted.isLogin === true && user !== null,
+      };
+    },
   })
 )

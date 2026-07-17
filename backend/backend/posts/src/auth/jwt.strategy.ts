@@ -3,6 +3,7 @@ import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 // 身份验证策略选择jwt
 import { Strategy, ExtractJwt } from "passport-jwt";
+import { getRuntimeEnv } from '../config/env';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy){
@@ -13,7 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy){
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), 
             
             // 不是直接调用 PassportStartegy(Strategy)  封装了
-            secretOrKey: process.env.TOKEN_SECRET || "",
+            secretOrKey: getRuntimeEnv().tokenSecret,
         })
     }
     // 默认调用验证 返回 JWT 用户对象

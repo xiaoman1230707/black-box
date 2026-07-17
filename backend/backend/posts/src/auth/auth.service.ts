@@ -9,6 +9,7 @@ import * as bcrypt  from "bcrypt";
 // 需要手动安装，插件式，可以优化nestjs性能 
 // 注入的方式 
 import { JwtService } from "@nestjs/jwt";
+import { publicMediaUrl } from "../config/public-url";
 
 @Injectable()
 export class AuthService {
@@ -33,9 +34,12 @@ export class AuthService {
         return {
             ...tokens,
             user:{
-                id:user.id.toString(),
+                id:user.id,
                 name:user.name,
-                avatar:`http://localhost:3000/uploads/avatar/resized/${user.avatars?.[0]?.filename}-large.jpg`,
+                // 头像三元判空,无头像返回 '',不再 undefined-large.jpg(§八#7)
+                avatar: user.avatars?.[0]?.filename
+                    ? publicMediaUrl(`avatar/resized/${user.avatars[0].filename}-large.jpg`)
+                    : '',
             }
         };
     }
@@ -43,9 +47,7 @@ export class AuthService {
     async refresh(refresh_token:string){
         try{
             // verifyAsync  验证token
-            const payload = await this.jwtService.verifyAsync(refresh_token,{
-                secret:process.env.TOKEN_SECRET,
-            });
+            const payload = await this.jwtService.verifyAsync(refresh_token);
             // console.log(payload, '////');
             return await this.generateTokens(payload.sub,payload.name);// 生成新的token
         }catch(err){
@@ -65,14 +67,12 @@ export class AuthService {
                 // 颁发了两个token 
                 this.jwtService.signAsync(payload,{ // acess token 访问令牌
                     expiresIn:'15m',// 有效期 15分钟 更安全 可能被中间人攻击
-                    secret:process.env.TOKEN_SECRET,
                 }),
                 // 7d 让服务器接受我们，用于刷新access token
                 // 服务器再次生成两个token给我们
                 // 但是普通请求token 依旧使用 15m acess token
                 this.jwtService.signAsync(payload,{ // refresh token 刷新令牌
                     expiresIn:'7d',
-                    secret:process.env.TOKEN_SECRET,
                 }),
             ])
             return {

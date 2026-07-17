@@ -1,26 +1,27 @@
-import { useState,useEffect } from 'react';
-import {
-  useNavigate,
-  useSearchParams
-} from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { ArrowLeft, X, Search } from 'lucide-react'
-import { useDebounce } from '@/hooks/useDebounce'
-import { useSearchStore } from '@/store/search'
-import { Card, CardContent } from '@/components/ui/card'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import PostItem from '@/components/PostItem'
-import type { Post } from '@/types'
+import { useEffect, useRef, useState } from 'react';
+import { ArrowLeft, Search as SearchIcon, Trash2 } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import PostItem from '@/components/PostItem';
+import PageState from '@/components/PageState';
+import SearchBar from '@/components/SearchBar';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { useDebounce } from '@/hooks/useDebounce';
+import { useSearchStore } from '@/store/search';
 
-const SearchPage: React.FC = () => {
-  const [keyword, setKeyword] = useState("");
-  const [searchParams] = useSearchParams();
-  const categoryParam = searchParams.get('category');
-  const debounceKeyword = useDebounce<string>(keyword, 500);
+interface SearchContentProps {
+  activeCategory: string | null;
+  initialKeyword: string;
+}
+
+function SearchContent({ activeCategory, initialKeyword }: SearchContentProps) {
+  const [keyword, setKeyword] = useState(initialKeyword);
+  const debouncedKeyword = useDebounce(keyword, 500);
+  const skipNextDebounce = useRef<string | null>(null);
   const navigate = useNavigate();
   const {
     loading,
+    error,
     suggestions,
     history,
     search,
@@ -29,136 +30,175 @@ const SearchPage: React.FC = () => {
     clearHistory,
   } = useSearchStore();
 
-  useEffect(()=>{
-    if(categoryParam && categoryParam !== 'all'){
-      searchByTag(categoryParam);
-    }
-  },[categoryParam])
+  const activeKeyword = keyword.trim();
+  const hasQuery = Boolean(activeCategory || activeKeyword);
 
-  useEffect(()=>{
-    if(debounceKeyword && !categoryParam){
-      search(debounceKeyword);
+  useEffect(() => {
+    if (activeCategory) {
+      void searchByTag(activeCategory);
+      return;
     }
-  },[debounceKeyword, categoryParam])
 
-  const handleSearch = (keyword:string) => {
-    if(keyword.trim()){
-      addHistory(keyword.trim());
-      search(keyword);
+    if (!initialKeyword.trim()) void search('');
+  }, [activeCategory, initialKeyword, search, searchByTag]);
+
+  useEffect(() => {
+    if (activeCategory) {
+      skipNextDebounce.current = null;
+      return;
     }
-    setKeyword(keyword);
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && keyword.trim()) {
-      addHistory(keyword.trim());
+    const normalized = debouncedKeyword.trim();
+    const submittedKeyword = skipNextDebounce.current;
+    if (submittedKeyword !== null) {
+      skipNextDebounce.current = null;
+      if (submittedKeyword === normalized) return;
     }
-  }
+    if (!normalized) return;
+    void search(normalized);
+  }, [activeCategory, debouncedKeyword, search]);
 
-  const handleResultClick = (post: Post) => {
-    navigate(`/post/${post.id}`);
-  }
+  const handleSearch = (value: string) => {
+    const normalized = value.trim();
+    setKeyword(normalized);
+    if (!normalized) {
+      skipNextDebounce.current = null;
+      void search('');
+      return;
+    }
+
+    skipNextDebounce.current = normalized;
+    addHistory(normalized);
+    void search(normalized);
+  };
+
+  const handleClear = () => {
+    skipNextDebounce.current = null;
+    setKeyword('');
+    void search('');
+  };
+
+  const retrySearch = () => {
+    if (activeCategory) void searchByTag(activeCategory);
+    else if (activeKeyword) void search(activeKeyword);
+  };
 
   return (
-    <div className="p-3 max-w-md mx-auto">
-      <div className="flex items-center gap-2 mb-3">
-        <Button size="icon" variant="ghost" onClick={()=>navigate(-1)}>
-          <ArrowLeft className="w-5 h-5"/>
+    <div className="mx-auto min-h-full w-full max-w-4xl space-y-6 py-5 sm:py-7" data-testid="search-page">
+      <header className="flex min-w-0 items-center gap-3 border-b-2 border-ink pb-5">
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={() => navigate(-1)}
+          aria-label="返回上一页"
+          title="返回"
+        >
+          <ArrowLeft aria-hidden="true" />
         </Button>
-        <div className="relative flex-1">
-          <Input
-            value={keyword}
-            onChange={(e)=>setKeyword(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={categoryParam ? `分类: ${categoryParam}` : "搜索游戏、攻略、评测..."}
-            className="pr-9"
+        <SearchBar
+          value={keyword}
+          onValueChange={setKeyword}
+          onSubmit={handleSearch}
+          onClear={handleClear}
+          placeholder={activeCategory ? `分类：${activeCategory}` : '搜索游戏、攻略、评测...'}
+          className="min-w-0 flex-1"
+        />
+      </header>
+
+      {!hasQuery && history.length > 0 ? (
+        <Card variant="panel" padding="default" data-slot="search-history">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold text-primary">RECENT SEARCHES</p>
+              <h1 className="font-heading text-xl font-black text-foreground">最近搜索</h1>
+            </div>
+            <Button type="button" size="sm" variant="ghost" onClick={clearHistory}>
+              <Trash2 aria-hidden="true" />
+              清空历史
+            </Button>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {history.map((item) => (
+              <Button key={item} type="button" variant="secondary" size="sm" onClick={() => handleSearch(item)}>
+                {item}
+              </Button>
+            ))}
+          </div>
+        </Card>
+      ) : null}
+
+      {!hasQuery && history.length === 0 ? (
+        <section data-slot="search-state" data-state="idle">
+          <PageState
+            state="idle"
+            title="搜索玩家社区"
+            description="输入游戏、攻略或评测关键词开始搜索。"
+            icon={<SearchIcon aria-hidden="true" />}
           />
-          {
-            keyword && (
-              <Button
-                size="icon"
-                variant="ghost"
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 p-0"
-                onClick={()=>setKeyword('')}
-              >
-                <X className="w-5 h-5"/>
-              </Button>
-            )
-          }
-        </div>
-        <Button size="icon" variant="ghost" onClick={()=>handleSearch(keyword)}>
-          <Search className="w-5 h-5"/>
-        </Button>
-      </div>
-      { !keyword && !categoryParam && history.length > 0 && (
-        <Card className="mb-3">
-          <CardContent className="p-3">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium">最近搜索</span>
-              <Button size="sm" variant="ghost" onClick={()=>clearHistory()}>
-                清空
-              </Button>
+        </section>
+      ) : null}
+
+      {hasQuery ? (
+        <section className="space-y-4" aria-labelledby="search-results-heading">
+          <div className="flex items-end justify-between gap-4 border-b-2 border-ink pb-3">
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-primary">SEARCH RESULTS</p>
+              <h1 id="search-results-heading" className="break-words font-heading text-xl font-black text-foreground sm:text-2xl">
+                {activeCategory ? `分类：${activeCategory}` : `“${activeKeyword}”`}
+              </h1>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {
-                history.map(item=>(
-                  <Button
-                  key={item}
-                  variant="secondary"
-                  size="sm"
-                  onClick={()=>handleSearch(item)}
-                  >
-                    {item}
+            {!loading && !error ? (
+              <span className="shrink-0 text-xs font-bold text-muted-foreground">共 {suggestions.length} 篇</span>
+            ) : null}
+          </div>
+
+          <div data-slot="search-state" data-state={loading ? 'loading' : error ? 'error' : suggestions.length ? 'success' : 'empty'}>
+            {loading ? (
+              <PageState state="loading" title="搜索中" description="正在匹配站内帖子。" compact />
+            ) : error ? (
+              <PageState
+                state="error"
+                title="搜索失败"
+                description={error}
+                compact
+                action={(
+                  <Button type="button" variant="outline" size="sm" onClick={retrySearch}>
+                    重试
                   </Button>
-                ))
-              }
-            </div>
-          </CardContent>
-        </Card>
-      )}
-      {(keyword || categoryParam) && (
-        <Card>
-          <CardContent className="p-0">
-            <ScrollArea className='h-[60vh]'>
-              {
-                loading && (
-                  <div className="p-4 text-center text-sm text-muted-foreground">
-                    搜索中...
-                  </div>
-                )
-              }
-              {!loading && suggestions.length === 0 && (
-                <div className="p-4 text-center text-sm text-muted-foreground">
-                  暂无搜索结果
-                </div>
-              )}
-              {
-                !loading && suggestions.length > 0 && suggestions[0] && 'title' in suggestions[0] ? (
-                  <div className="space-y-3 p-3">
-                    {suggestions.map((post)=>(
-                      <div key={post.id} onClick={()=>handleResultClick(post)}>
-                        <PostItem post={post} />
-                      </div>
-                    ))}
-                  </div>
-                ) : !loading && suggestions.length > 0 ? (
-                  suggestions.map((item: any, index: number)=>(
-                    <div
-                    className="p-4 py-3 border-b text-sm active:bg-muted"
-                    key={index}
-                    onClick={()=>navigate('/')}
-                    >
-                      {item}
-                    </div>
-                  ))
-                ) : null
-              }
-            </ScrollArea>
-          </CardContent>
-        </Card>
-      )}
+                )}
+              />
+            ) : suggestions.length === 0 ? (
+              <PageState
+                state="empty"
+                title="暂无搜索结果"
+                description="尝试更换关键词或使用更简短的描述。"
+                compact
+              />
+            ) : (
+              <div className="grid min-w-0 gap-4" data-testid="search-results">
+                {suggestions.map((post) => (
+                  <PostItem key={post.id} post={post} highlight={activeCategory ? undefined : activeKeyword} />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      ) : null}
     </div>
-  )
+  );
 }
 
-export default SearchPage
+export default function SearchPage() {
+  const [searchParams] = useSearchParams();
+  const categoryParam = searchParams.get('category');
+  const activeCategory = categoryParam && categoryParam !== 'all' ? categoryParam : null;
+  const initialKeyword = activeCategory ? '' : searchParams.get('q') ?? '';
+
+  return (
+    <SearchContent
+      key={`${activeCategory ?? ''}|${initialKeyword}`}
+      activeCategory={activeCategory}
+      initialKeyword={initialKeyword}
+    />
+  );
+}

@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>帖子详情 · GG 玩家社区</title>
+<link rel="stylesheet" href="../css/system.css" />
+<style>
+  .article { max-width: 760px; }
+  .article h1 { font-size: var(--text-2xl); font-weight: 900; line-height: 1.12; }
+  .article-meta { display:flex; align-items:center; gap:var(--space-4); flex-wrap:wrap; }
+  .article-cover { height: 300px; border:2px solid var(--fg); border-radius:var(--radius-md); display:grid; place-items:center; font-size:88px; box-shadow:5px 5px 0 var(--fg); }
+  .prose p { margin: var(--space-5) 0; font-size: var(--text-lg); line-height: 1.72; color: var(--fg-2); }
+  .prose h2 { font-size: var(--text-xl); font-weight:800; margin: var(--space-8) 0 var(--space-3); }
+  .prose strong { color: var(--fg); }
+  .prose blockquote { margin: var(--space-6) 0; padding: var(--space-4) var(--space-5); border-left: 5px solid var(--accent); background: var(--surface-warm); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-weight: 600; }
+  .prose ul { padding-left: 22px; line-height: 1.9; color: var(--fg-2); font-size: var(--text-base); }
+  .prose ul li::marker { color: var(--accent); }
+  .actbar { position: sticky; bottom: 0; background: color-mix(in oklab,var(--bg) 88%, transparent); backdrop-filter: blur(12px); border-top: 2px solid var(--fg); padding: var(--space-4) 0; }
+  .comment { display:flex; gap:var(--space-4); padding: var(--space-5) 0; border-bottom: 2px dashed var(--border); }
+  .comment-body { flex:1; }
+  .comment-head { display:flex; align-items:center; gap:var(--space-3); font-size:var(--text-sm); }
+  .reply-box { display:flex; gap:var(--space-3); align-items:flex-start; }
+  .toc { position: sticky; top: 100px; }
+  @media (max-width:980px){ .detail-grid { grid-template-columns: 1fr !important; } .toc { display:none; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" data-od-id="sidebar">
+    <div class="brand"><span class="brand-mark">GG</span><span>玩家社区</span></div>
+    <a class="nav-link active" href="home.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg><span>首页</span></a>
+    <a class="nav-link" href="chatbot.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 16 0Z"/></svg><span>攻略助手</span></a>
+    <a class="nav-link" href="compose.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg><span>发帖</span></a>
+    <a class="nav-link" href="profile.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span>我的</span></a>
+    <div class="nav-sep"></div>
+    <div class="nav-foot"><a class="nav-user" href="profile.html"><span class="avatar avatar-md cv-4">阿</span><span class="nav-user-meta"><strong style="display:block;font-size:13px">阿岚</strong><span style="font-size:11px;color:var(--muted)">Lv.18 · 攻略组</span></span></a></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="container row">
+        <a class="btn btn-sm btn-secondary" href="home.html">← 返回首页</a>
+        <label class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="search" placeholder="搜索游戏、攻略、玩家或话题…" />
+        </label>
+      </div>
+    </header>
+
+    <div class="container page-pad">
+      <div class="detail-grid" style="display:grid;grid-template-columns:1fr 240px;gap:var(--space-12);align-items:start">
+        <!-- 正文 -->
+        <article class="article stack" style="gap:var(--space-5)" data-od-id="article">
+          <div class="row" style="gap:var(--space-2)">
+            <span class="pill pill-guide">🧭 攻略</span>
+            <span class="pill pill-soft">暗影回廊</span>
+            <span class="pill pill-soft">噩梦难度</span>
+          </div>
+          <h1>零基础速通指南｜《暗影回廊》噩梦难度 BOSS 全流程拆解</h1>
+          <div class="article-meta muted" style="font-size:var(--text-sm)">
+            <span class="row" style="gap:8px"><span class="avatar avatar-md cv-6">手</span><strong style="color:var(--fg)">手残也能过</strong></span>
+            <span>· 6 月 16 日发布</span>
+            <span>· 阅读 38.2k</span>
+            <span>· ⏱ 约 12 分钟</span>
+          </div>
+          <div class="article-cover cv-6">🗡️</div>
+
+          <div class="prose">
+            <p>先说结论：<strong>噩梦难度不是数值墙，而是「读招墙」。</strong>只要你能记住每个 BOSS 的前摇帧，靠走位和弹反就能裸装通关。这篇我会把全部 7 个 BOSS 拆开讲，每个都给出招式预警、安全输出窗口和保命配装。</p>
+
+            <blockquote>本指南基于 1.3.2 版本实测，所有数据来自 30+ 次通关录像逐帧统计，文末附一张可打印的速查表。</blockquote>
+
+            <h2>一、开荒前的三件准备</h2>
+            <p>在进入第一关之前，请务必完成这三件事，它们能让你的容错率提高一个档次：</p>
+            <ul>
+              <li>把「弹反时机」练到肌肉记忆——去训练场对着木桩练满 50 次再上路；</li>
+              <li>体力药水留 2 瓶应急，不要见血就喝，留给真正的处决斩；</li>
+              <li>护符优先选「弹反延长 +0.1s」，对噩梦难度收益远高于纯攻击护符。</li>
+            </ul>
+
+            <h2>二、首领「锈蚀守门人」</h2>
+            <p>它的危险招式只有一个：<strong>三连横扫接下劈。</strong>前两段横扫节奏固定，第三段会有半秒停顿——这半秒就是你的弹反窗口。劈砍落地后它有 1.4 秒硬直，足够你打满一套轻攻击。记住，<strong>贪刀是噩梦难度最大的死因</strong>，打两下就撤，比打三下被秒安全得多。</p>
+
+            <h2>三、第二关「双生回廊」</h2>
+            <p>这一关是全篇难点。两个分身共享血条但独立行动，关键是把它们「叠」到同一侧。沿着场地外圈逆时针拉，大约 8 秒就能让两个分身重合，这时一套范围技能可以同时命中，效率翻倍。</p>
+
+            <blockquote>速查口诀：横扫数三段，分身拉外圈，处决留满体，贪刀必入土。</blockquote>
+
+            <p>后面四个 BOSS 的拆解、配装表与逐帧时间轴，我整理在了下方折叠区，篇幅有限就不全贴了。如果这篇对你有帮助，点个赞让更多卡关的兄弟看到 🙏。</p>
+          </div>
+
+          <!-- 作者卡 -->
+          <div class="panel panel-pad row-between" style="margin-top:var(--space-6)">
+            <div class="row"><span class="avatar avatar-lg cv-6">手</span><div><strong style="font-size:var(--text-lg)">手残也能过</strong><p class="muted" style="font-size:var(--text-sm)">Lv.24 · 已发布 86 篇攻略 · 12.4 万粉丝</p></div></div>
+            <button class="btn btn-primary btn-sm">+ 关注</button>
+          </div>
+
+          <!-- 评论区 -->
+          <section data-od-id="comments" style="margin-top:var(--space-8)">
+            <h2 class="h-md" style="margin-bottom:var(--space-5)">评论 · 642</h2>
+            <div class="reply-box panel panel-pad" style="margin-bottom:var(--space-6)">
+              <span class="avatar avatar-md cv-4">阿</span>
+              <div class="grow stack" style="gap:var(--space-3)">
+                <textarea class="textarea" placeholder="说点什么，友善发言一起变强 💪" style="min-height:72px"></textarea>
+                <div class="row-between"><span class="muted" style="font-size:var(--text-xs)">支持 @玩家 与表情</span><button class="btn btn-primary btn-sm">发表评论</button></div>
+              </div>
+            </div>
+
+            <div class="comment">
+              <span class="avatar avatar-md cv-2">连</span>
+              <div class="comment-body">
+                <div class="comment-head"><strong>连招狂魔</strong><span class="pill pill-soft" style="padding:2px 8px">沙发</span><span class="muted">· 2 小时前</span></div>
+                <p style="margin:6px 0">双生回廊那段太顶了！之前一直卡在这，按你说的逆时针拉外圈一把过，感谢大佬 🎉</p>
+                <div class="row" style="gap:var(--space-5);font-size:var(--text-xs)"><button class="stat-btn" data-like><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9Z"/></svg><span data-count>238</span></button><button class="stat-btn">回复</button></div>
+              </div>
+            </div>
+            <div class="comment">
+              <span class="avatar avatar-md cv-7">弹</span>
+              <div class="comment-body">
+                <div class="comment-head"><strong>弹反苦手</strong><span class="muted">· 4 小时前</span></div>
+                <p style="margin:6px 0">求问守门人第三段那个停顿，我总是反应不过来，是看动作还是听音效判断啊？</p>
+                <div class="row" style="gap:var(--space-5);font-size:var(--text-xs)"><button class="stat-btn" data-like><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9Z"/></svg><span data-count>57</span></button><button class="stat-btn">回复</button></div>
+              </div>
+            </div>
+            <div class="comment">
+              <span class="avatar avatar-md cv-6">手</span>
+              <div class="comment-body">
+                <div class="comment-head"><strong>手残也能过</strong><span class="pill pill-accent" style="padding:2px 8px">作者</span><span class="muted">· 3 小时前</span></div>
+                <p style="margin:6px 0">@弹反苦手 听音效更稳，第三段挥砍前会有一声金属摩擦，听到就按反击键，比看动作快两帧。</p>
+                <div class="row" style="gap:var(--space-5);font-size:var(--text-xs)"><button class="stat-btn" data-like><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9Z"/></svg><span data-count>129</span></button><button class="stat-btn">回复</button></div>
+              </div>
+            </div>
+          </section>
+        </article>
+
+        <!-- 侧栏 TOC -->
+        <aside class="toc stack" style="gap:var(--space-5)" data-od-id="toc">
+          <div class="panel panel-pad stack" style="gap:var(--space-3)">
+            <span class="eyebrow">本文目录</span>
+            <a href="#" class="muted" style="font-size:var(--text-sm);font-weight:600">一、开荒前的三件准备</a>
+            <a href="#" class="muted" style="font-size:var(--text-sm);font-weight:600">二、锈蚀守门人</a>
+            <a href="#" class="muted" style="font-size:var(--text-sm);font-weight:600">三、双生回廊</a>
+          </div>
+          <div class="panel panel-pad stack" style="gap:var(--space-4)">
+            <span class="eyebrow">相关推荐</span>
+            <a href="post-detail.html" class="stack" style="gap:4px"><strong style="font-size:var(--text-sm)">手柄还是键鼠？两套外设各通一遍</strong><span class="muted" style="font-size:var(--text-xs)">⭐ 评测 · 1.2k 赞</span></a>
+            <hr style="border:0;border-top:2px dashed var(--border)">
+            <a href="post-detail.html" class="stack" style="gap:4px"><strong style="font-size:var(--text-sm)">噩梦难度配装表 v1.3.2 整理</strong><span class="muted" style="font-size:var(--text-xs)">🧭 攻略 · 3.0k 赞</span></a>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- 底部操作条 -->
+    <div class="actbar" data-od-id="actbar">
+      <div class="container row-between">
+        <div class="post-stats" style="font-size:var(--text-base)">
+          <button class="stat-btn" data-like style="font-weight:700"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9Z"/></svg><span data-count>5.1k</span> 点赞</button>
+          <span class="stat-btn" style="font-weight:700"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 16 0Z"/></svg>642 评论</span>
+          <button class="stat-btn" style="font-weight:700"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8v12h14V8M3 4h18v4H3zM10 12h4"/></svg>收藏</button>
+        </div>
+        <button class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 12v8h16v-8M12 3v13M8 7l4-4 4 4"/></svg>分享</button>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="../js/app.js"></script>
+</body>
+</html>

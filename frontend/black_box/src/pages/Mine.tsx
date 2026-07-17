@@ -1,140 +1,149 @@
+import { useRef, useState } from "react"
+import { LogOut, Upload } from "lucide-react"
+
+import { uploadAvatar } from "@/api/upload"
+import Loading from "@/components/Loading"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import {
-  useState 
-} from 'react';
-// import { useMineStore } from '@/store/mine'
-import { useUserStore } from '@/store/useUserStore'
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import {
   Drawer,
   DrawerClose,
-  DrawerHeader,
   DrawerContent,
   DrawerDescription,
   DrawerFooter,
+  DrawerHeader,
   DrawerTitle,
-  DrawerTrigger
-} from '@/components/ui/drawer';
-import { Camera, Upload, Sparkles } from 'lucide-react'
-import Loading from '@/components/Loading';
-import { useNavigate } from 'react-router-dom';
+  DrawerTrigger,
+} from "@/components/ui/drawer"
+import { useUserStore } from "@/store/useUserStore"
+import { getApiErrorMessage } from "@/lib/api-error"
+import { feedback } from "@/lib/feedback"
 
 export default function Mine() {
-  const navigate = useNavigate();
-  const {
-    user,
-    logout,
-    aiAvatar
-  } = useUserStore();
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const { user, logout, setAvatar } = useUserStore()
+  const [open, setOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleAction = async (type: string) => {
-    setOpen(false);
-    if (type === 'ai') {
-      setLoading(true);
-      await aiAvatar();
-      setLoading(false);
+  const handleAvatarUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0]
+    event.target.value = ""
+    if (!file) return
+
+    // 保持既有时序：先关闭 Drawer，再显示全局 Loading。
+    setOpen(false)
+    setLoading(true)
+    try {
+      const response = await uploadAvatar(file)
+      setAvatar(response.url)
+      feedback.success("头像更新成功", { id: "avatar-upload" })
+    } catch (error) {
+      console.error("头像上传失败", error)
+      feedback.error(getApiErrorMessage(error, "头像上传失败，请重试"), {
+        id: "avatar-upload",
+      })
+    } finally {
+      setLoading(false)
     }
   }
-  
+
+  const fallback = user?.name?.trim().charAt(0).toUpperCase() || "玩"
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white p-6 pb-10 mb-4">
-        <div className="flex items-center space-x-4">
-          <Drawer open={open} onOpenChange={setOpen}>
-            <DrawerTrigger asChild>
-              <div className="h-16 w-16 rounded-full bg-primary/10 flex 
-              items-center justify-center text-primary text-xl font-bold">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={user?.avatar} />
-                  <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold">
-                  {user?.name?.[0].toUpperCase()}
-                  </AvatarFallback>
+    <main className="mx-auto w-full max-w-3xl px-3 py-4 sm:px-5 sm:py-6">
+      <header className="mb-5">
+        <h1 className="font-heading text-3xl font-extrabold sm:text-4xl">我的账户</h1>
+        <p className="mt-1 text-sm text-foreground-2">管理当前账号与头像。</p>
+      </header>
+
+      <Card>
+        <CardHeader className="border-b-2 border-border pb-5">
+          <CardTitle>账户摘要</CardTitle>
+          <CardDescription>当前登录身份</CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <div className="flex min-w-0 flex-col items-start gap-5 sm:flex-row sm:items-center">
+            <Drawer open={open} onOpenChange={setOpen}>
+              <DrawerTrigger
+                className="group flex min-h-11 shrink-0 items-center gap-3 rounded-sm border-2 border-ink bg-surface-warm p-2 pr-4 text-sm font-bold text-foreground shadow-sm outline-none transition-transform hover:-translate-y-0.5 focus-visible:[box-shadow:var(--focus-ring)] motion-reduce:transform-none"
+                aria-label="修改头像"
+              >
+                <Avatar size="lg" data-testid="mine-avatar">
+                  <AvatarImage key={user?.avatar} src={user?.avatar} alt="当前头像" />
+                  <AvatarFallback>{fallback}</AvatarFallback>
                 </Avatar>
-              </div>
-            </DrawerTrigger>
-            <DrawerContent>
-              <div className="mx-auto w-full max-w-sm">
-                <DrawerHeader className="text-left">
-                  <DrawerTitle>修改头像</DrawerTitle>
-                  <DrawerDescription>
-                    请选择一种方式更新您的个人头像
-                  </DrawerDescription>
-                </DrawerHeader>
-                <div className="p-4 space-y-3">
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start h-14 text-base"
-                    onClick={() => handleAction('camera')}
-                  >
-                    <Camera className="mr-3 h-5 w-5 text-blue-500"/>
-                    拍照
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start h-14 text-base"
-                    onClick={() => handleAction('upload')}
-                  >
-                    <Upload className="mr-3 h-5 w-5 text-blue-500"/>
-                    从相册上传
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start h-14 text-base
-                    bg-gradient-to-r from-purple-600 to-indigo-600 border-none  
-                    "
-                    onClick={() => handleAction('ai')}
-                  >
-                    <Sparkles className="mr-3 h-5 w-5 text-yellow-300"/>
-                    AI生成游戏头像
-                  </Button>
+                <span>修改头像</span>
+              </DrawerTrigger>
+              <DrawerContent className="border-t-2 border-ink bg-card shadow-lg max-[760px]:bottom-[calc(var(--bottombar-h)+env(safe-area-inset-bottom))]">
+                <div className="mx-auto w-full max-w-md">
+                  <DrawerHeader className="text-left">
+                    <DrawerTitle className="font-heading text-xl font-extrabold">修改头像</DrawerTitle>
+                    <DrawerDescription>从本地选择一张图片更新头像。</DrawerDescription>
+                  </DrawerHeader>
+                  <div className="px-4 py-2">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="w-full justify-start"
+                      onClick={() => fileInputRef.current?.click()}
+                      data-testid="avatar-upload-btn"
+                    >
+                      <Upload className="size-5" aria-hidden="true" />
+                      从相册上传
+                    </Button>
+                  </div>
+                  <DrawerFooter>
+                    <DrawerClose asChild>
+                      <Button variant="ghost" size="lg" className="w-full">
+                        取消
+                      </Button>
+                    </DrawerClose>
+                  </DrawerFooter>
                 </div>
-                <DrawerFooter className="pt-2">
-                  <DrawerClose asChild>
-                    <Button variant="ghost" className="w-full h-12">取消</Button>
-                  </DrawerClose>
-                </DrawerFooter>
-              </div>
-            </DrawerContent>
-          </Drawer>
-          <div>
-            <h2 className="text-xl font-bold">{user?.name}</h2>
-            <p className="text-sm text-gray-500">ID: {user?.id}</p>
+              </DrawerContent>
+            </Drawer>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              data-testid="avatar-file-input"
+              onChange={handleAvatarUpload}
+            />
+
+            <div className="min-w-0 flex-1">
+              <p className="break-words font-heading text-2xl font-extrabold">
+                {user?.name || "未命名玩家"}
+              </p>
+              <p className="mt-1 break-all text-sm text-foreground-2">
+                ID: {user?.id ?? "-"}
+              </p>
+            </div>
           </div>
-        </div>
-      </div>
-      <div className="mt-4.space-y-4 p-4">
-        <div className="bg-white rounded-lg p-4 shadow-sm">
-          <div className="flex justify-between items-center py-2 border-b last:border-b-0">
-            <span>我的帖子</span>
-            <span className="text-gray-400 text-sm">&gt;</span>
-          </div>
-          <div 
-          onClick={() => navigate('/git')}
-          className="flex justify-between items-center py-2 border-b last:border-b-0">
-            <span>AI git 工具</span>
-            <span className="text-gray-400 text-sm">&gt;</span>
-          </div>
-           <div 
-           onClick={() => navigate('/rag')}
-           className="flex justify-between items-center py-2 border-b last:border-b-0"
-           >
-            <span>RAG</span>
-            <span className="text-gray-400 text-sm">&gt;</span>
-          </div>
-        </div>
-        <Button
-          variant="destructive"
-          className="w-full mt-8 h-12 rounded-xl text-base font-semibold shadow-md 
-          shadow-red-100
-          "
-          onClick={() => logout()}
-        >退出登录</Button>
-      </div>
-      {loading && <Loading />}
-    </div>
+        </CardContent>
+      </Card>
+
+      <Button
+        variant="destructive"
+        size="lg"
+        className="mt-6 w-full sm:w-auto"
+        onClick={logout}
+      >
+        <LogOut className="size-5" aria-hidden="true" />
+        退出登录
+      </Button>
+
+      {loading ? <Loading /> : null}
+    </main>
   )
 }

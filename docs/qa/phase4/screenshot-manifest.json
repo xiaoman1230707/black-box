@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "outputRoot": "docs/qa/phase4/screenshots",
+  "viewports": [
+    { "key": "1440x1000", "width": 1440, "height": 1000 },
+    { "key": "900x1000", "width": 900, "height": 1000 },
+    { "key": "390x844", "width": 390, "height": 844 },
+    { "key": "320x740", "width": 320, "height": 740 }
+  ],
+  "pages": [
+    { "key": "home", "path": "/", "auth": true, "anchor": { "kind": "testid", "value": "post-item" } },
+    { "key": "search", "path": "/search", "auth": true, "anchor": { "kind": "placeholder", "value": "搜索游戏、攻略、评测..." } },
+    { "key": "post-detail", "path": "/post/1", "auth": true, "anchor": { "kind": "testid", "value": "comment-input" } },
+    { "key": "compose", "path": "/compose", "auth": true, "anchor": { "kind": "testid", "value": "compose-page" } },
+    { "key": "chat", "path": "/chat", "auth": true, "anchor": { "kind": "placeholder", "value": "Type your message..." } },
+    { "key": "mine", "path": "/mine", "auth": true, "anchor": { "kind": "testid", "value": "mine-avatar" } },
+    { "key": "login", "path": "/login", "auth": false, "anchor": { "kind": "testid", "value": "login-page" } }
+  ]
+}

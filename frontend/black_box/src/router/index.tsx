@@ -9,48 +9,47 @@ import {
 } from 'react-router-dom';
 import Loading from '@/components/Loading';
 import MainLayout from '@/layouts/MainLayout';
-import { AliveScope } from 'react-activation';
+import RequireAuth from '@/components/RequireAuth';
 
-const KeepAliveHome = lazy(()=>import('@/components/KeepAliveHome'))
+// 二期已移除 react-activation/keep-alive(与 React 19 不兼容、insertBefore DOM 冲突致白屏)。
+// 首页"返回保持"靠 store(useHomeStore),滚动靠 sessionStorage 恢复(见 Home.tsx)。
+const Home = lazy(()=>import('@/pages/Home'))
 const Mine = lazy(()=>import('@/pages/Mine'))
 const Login = lazy(()=>import('@/pages/Login'))
-const KeepAliveChat = lazy(()=>import('@/components/KeepAliveChat'))
-const PostLayout = lazy(()=>import('@/layouts/PostLayout'))
+const Chat = lazy(()=>import('@/pages/Chat'))
 const PostDetail = lazy(()=>import('@/pages/post'))
 const Search = lazy(()=>import('@/pages/Search'))
-const RAG = lazy(()=>import('@/pages/RAG'))
-const Git = lazy(()=>import('@/pages/Git'))
+const Compose = lazy(()=>import('@/pages/Compose'))
 
 export default function RouterConfig(
   {children}: {children?: React.ReactNode}
 ){
-    
+
     return (
         <>
         <Router>
-            <AliveScope>
-                <Suspense fallback={<Loading />}>
-                    <Routes>
-                        <Route path='/login' element={<Login />} />
-                        <Route path='/chat' element={<KeepAliveChat />} />
-                        <Route path='/search' element={<Search />} />
-                        <Route path='/rag' element={<RAG />} />
-                        <Route path='/git' element={<Git />} />
-                        {/* Post 模块 */}
-                        <Route path='/post' element={<PostLayout />}>
-                            <Route path=':id' element={<PostDetail />} />
-                        </Route>
-                        {/* 布局组件 */}
-                        <Route path='/' element={<MainLayout/>}>
-                            <Route path='' element={<KeepAliveHome />} />
-                                <Route path='mine' element={<Mine />} />
-                        </Route>
-                    </Routes>
-                </Suspense>
-            </AliveScope>
+            <Suspense fallback={<Loading />}>
+                <Routes>
+                    {/* 登录页:独立全屏,不进 App Shell(auth 例外) */}
+                    <Route path='/login' element={<Login />} />
+                    {/* App Shell:所有业务页在此渲染 */}
+                    <Route path='/' element={<MainLayout/>}>
+                        {/* 公开页(现有展示页原样挂入) */}
+                        <Route index element={<Home />} />
+                        <Route path='search' element={<RequireAuth><Search /></RequireAuth>} />
+                        <Route path='post/:id' element={<PostDetail />} />
+                        {/* 受保护页:路由级守卫单一来源 */}
+                        <Route path='chat' element={<RequireAuth><Chat /></RequireAuth>} />
+                        <Route path='mine' element={<RequireAuth><Mine /></RequireAuth>} />
+                        {/* 发帖页:二期已替换为真实表单 */}
+                        <Route path='compose' element={<RequireAuth><Compose /></RequireAuth>} />
+                    </Route>
+                    {/* /rag、/git 路由已移除(整条不可达);组件/store/api 物理删除留三期 */}
+                </Routes>
+            </Suspense>
                 {children}
         </Router>
         </>
-    
+
     )
 }

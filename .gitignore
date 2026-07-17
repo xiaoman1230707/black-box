@@ -42,6 +42,9 @@ coverage/
 # Temp
 .temp
 .tmp
+.pnpm-store/
+test-results/
+**/test-results/
 
 # Prisma generated
 /generated/prisma

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>我的 · GG 玩家社区</title>
+<link rel="stylesheet" href="../css/system.css" />
+<style>
+  .profile-hero { border:2px solid var(--fg); border-radius:var(--radius-lg); overflow:hidden; box-shadow:5px 5px 0 var(--fg); }
+  .hero-banner { height:140px; background:linear-gradient(120deg,#ff6b00,#ff3d81,#6a5cff); }
+  .hero-row { display:flex; align-items:flex-end; gap:var(--space-5); padding:0 var(--space-6) var(--space-6); margin-top:-44px; }
+  .stat-pill { text-align:center; }
+  .stat-pill b { display:block; font-size:var(--text-xl); font-weight:900; }
+  .entry-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:var(--space-4); }
+  .entry { display:flex; align-items:center; gap:var(--space-4); padding:var(--space-5); border:2px solid var(--fg); border-radius:var(--radius-md); background:var(--surface); box-shadow:3px 3px 0 var(--fg); transition:transform var(--motion-fast) var(--ease-standard),box-shadow var(--motion-fast); }
+  .entry:hover { transform:translate(-2px,-2px); box-shadow:5px 5px 0 var(--accent); }
+  .entry-ico { width:46px;height:46px;border-radius:var(--radius-sm);display:grid;place-items:center;border:2px solid var(--fg);flex-shrink:0; }
+  .entry-ico svg{ width:22px;height:22px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" data-od-id="sidebar">
+    <div class="brand"><span class="brand-mark">GG</span><span>玩家社区</span></div>
+    <a class="nav-link" href="home.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg><span>首页</span></a>
+    <a class="nav-link" href="chatbot.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 16 0Z"/></svg><span>攻略助手</span></a>
+    <a class="nav-link" href="compose.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg><span>发帖</span></a>
+    <a class="nav-link active" href="profile.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span>我的</span></a>
+    <div class="nav-sep"></div>
+    <div class="nav-foot"><a class="nav-user" href="profile.html"><span class="avatar avatar-md cv-4">阿</span><span class="nav-user-meta"><strong style="display:block;font-size:13px">阿岚</strong><span style="font-size:11px;color:var(--muted)">Lv.18 · 攻略组</span></span></a></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="container row">
+        <h1 class="h-md grow">我的主页</h1>
+        <a class="btn btn-sm btn-secondary" href="edit-profile.html">编辑资料</a>
+      </div>
+    </header>
+
+    <div class="container page-pad stack" style="gap:var(--space-8)">
+      <!-- 头部信息 -->
+      <section class="profile-hero" data-od-id="profile-head">
+        <div class="hero-banner"></div>
+        <div class="hero-row wrap">
+          <span class="avatar avatar-lg cv-4" style="width:96px;height:96px;font-size:34px;border-width:3px">阿</span>
+          <div class="grow" style="padding-bottom:6px">
+            <div class="row" style="gap:10px"><strong style="font-size:var(--text-xl)">阿岚</strong><span class="pill pill-accent">Lv.18</span><span class="pill pill-soft">攻略组</span></div>
+            <p class="muted" style="margin-top:6px;font-size:var(--text-sm)">「认真写攻略，也认真菜。」🎮 主玩动作 / 经营 / Roguelike</p>
+          </div>
+          <div class="row" style="gap:var(--space-6);padding-bottom:10px">
+            <div class="stat-pill"><b class="mono">42</b><span class="muted" style="font-size:var(--text-xs)">文章</span></div>
+            <div class="stat-pill"><b class="mono">1.2k</b><span class="muted" style="font-size:var(--text-xs)">获赞</span></div>
+            <div class="stat-pill"><b class="mono">358</b><span class="muted" style="font-size:var(--text-xs)">粉丝</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 功能入口 -->
+      <section data-od-id="entries" class="stack" style="gap:var(--space-5)">
+        <h2 class="h-md">快捷入口</h2>
+        <div class="entry-grid">
+          <a class="entry" href="compose.html"><span class="entry-ico" style="background:var(--accent);color:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg></span><div><strong>发帖</strong><div class="muted" style="font-size:var(--text-xs)">写攻略 / 提问</div></div></a>
+          <a class="entry" href="my-posts.html"><span class="entry-ico" style="background:var(--surface-warm)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h5"/></svg></span><div><strong>我的文章</strong><div class="muted" style="font-size:var(--text-xs)">42 篇已发布</div></div></a>
+          <a class="entry" href="my-likes.html"><span class="entry-ico" style="background:#ffe0e0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9Z"/></svg></span><div><strong>我的点赞</strong><div class="muted" style="font-size:var(--text-xs)">128 篇收藏</div></div></a>
+          <a class="entry" href="edit-profile.html"><span class="entry-ico" style="background:#d9efff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span><div><strong>编辑资料</strong><div class="muted" style="font-size:var(--text-xs)">昵称 / 头像 / 简介</div></div></a>
+        </div>
+      </section>
+
+      <!-- 最近文章 -->
+      <section data-od-id="recent" class="stack" style="gap:var(--space-5)">
+        <div class="row-between"><h2 class="h-md">最近发布</h2><a class="muted" href="my-posts.html" style="font-size:var(--text-sm);font-weight:700">查看全部 →</a></div>
+        <div class="stack" style="gap:var(--space-3)">
+          <a class="tile row-between" href="post-detail.html"><div class="row"><span class="pill pill-guide">🧭 攻略</span><strong>零基础速通指南｜《暗影回廊》噩梦难度 BOSS 全流程拆解</strong></div><span class="muted mono" style="font-size:var(--text-xs)">5.1k 赞 · 642 评</span></a>
+          <a class="tile row-between" href="post-detail.html"><div class="row"><span class="pill pill-review">⭐ 评测</span><strong>手柄还是键鼠？我用两套外设把《钢铁前线》通了两遍</strong></div><span class="muted mono" style="font-size:var(--text-xs)">1.2k 赞 · 173 评</span></a>
+          <a class="tile row-between" href="post-detail.html"><div class="row"><span class="pill pill-guide">🧭 攻略</span><strong>农场经营类新手别踩坑：前 10 小时资源规划与作物优先级</strong></div><span class="muted mono" style="font-size:var(--text-xs)">2.0k 赞 · 231 评</span></a>
+        </div>
+      </section>
+
+      <!-- 退出登录 -->
+      <section data-od-id="logout">
+        <button class="btn" style="border-color:var(--danger);color:var(--danger)" onclick="if(confirm('确定退出当前账号？')){location.href='auth.html'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 17l5-5-5-5M21 12H9M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg>退出登录</button>
+      </section>
+    </div>
+  </main>
+</div>
+<script src="../js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>编辑资料 · GG 玩家社区</title>
+<link rel="stylesheet" href="../css/system.css" />
+<style>
+  .form-card { max-width:640px; }
+  .avatar-pick { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  .av-opt { cursor:pointer; transition:transform var(--motion-fast); }
+  .av-opt:hover { transform:scale(1.08); }
+  .av-opt.on { outline:3px solid var(--accent); outline-offset:2px; border-radius:50%; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" data-od-id="sidebar">
+    <div class="brand"><span class="brand-mark">GG</span><span>玩家社区</span></div>
+    <a class="nav-link" href="home.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg><span>首页</span></a>
+    <a class="nav-link" href="chatbot.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 16 0Z"/></svg><span>攻略助手</span></a>
+    <a class="nav-link" href="compose.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg><span>发帖</span></a>
+    <a class="nav-link active" href="profile.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span>我的</span></a>
+    <div class="nav-sep"></div>
+    <div class="nav-foot"><a class="nav-user" href="profile.html"><span class="avatar avatar-md cv-4">阿</span><span class="nav-user-meta"><strong style="display:block;font-size:13px">阿岚</strong><span style="font-size:11px;color:var(--muted)">Lv.18 · 攻略组</span></span></a></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar"><div class="container row"><a class="btn btn-sm btn-secondary" href="profile.html">← 我的</a><h1 class="h-md grow">编辑资料</h1></div></header>
+    <div class="container page-pad">
+      <form class="form-card panel panel-pad stack" style="gap:var(--space-6)" onsubmit="event.preventDefault();alert('资料已保存 ✓');location.href='profile.html'">
+        <div class="field">
+          <label>头像</label>
+          <div class="avatar-pick">
+            <span class="avatar avatar-lg cv-4 av-opt on">阿</span>
+            <span class="avatar avatar-lg cv-2 av-opt">阿</span>
+            <span class="avatar avatar-lg cv-3 av-opt">阿</span>
+            <span class="avatar avatar-lg cv-7 av-opt">阿</span>
+            <button type="button" class="btn btn-sm btn-secondary">上传自定义</button>
+          </div>
+        </div>
+        <div class="field"><label>昵称</label><input class="input" value="阿岚" maxlength="20" /></div>
+        <div class="field"><label>个性签名</label><textarea class="textarea" style="min-height:80px">认真写攻略，也认真菜。🎮 主玩动作 / 经营 / Roguelike</textarea></div>
+        <div class="field"><label>常玩平台</label>
+          <div class="tagbar"><button type="button" class="tag-chip active">PC</button><button type="button" class="tag-chip">PlayStation</button><button type="button" class="tag-chip">Switch</button><button type="button" class="tag-chip">手机</button></div>
+        </div>
+        <div class="field"><label>所在地区</label><select class="select"><option>中国大陆</option><option>中国港澳台</option><option>海外</option></select></div>
+        <div class="row" style="gap:12px;padding-top:8px"><button class="btn btn-primary" type="submit">保存修改</button><a class="btn btn-secondary" href="profile.html">取消</a></div>
+      </form>
+    </div>
+  </main>
+</div>
+<script src="../js/app.js"></script>
+<script>
+  document.querySelectorAll('.av-opt').forEach(a=>a.addEventListener('click',()=>{document.querySelectorAll('.av-opt').forEach(x=>x.classList.remove('on'));a.classList.add('on')}));
+  document.querySelectorAll('.tag-chip').forEach(t=>t.addEventListener('click',()=>t.classList.toggle('active')));
+</script>
+</body>
+</html>

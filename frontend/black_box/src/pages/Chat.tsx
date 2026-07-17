@@ -1,78 +1,186 @@
-import Header from '@/components/Header';
-import {
-  useChatbot
-} from '@/hooks/useChatBot';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { ArrowLeft, Bot, Loader2, Send, UserRound } from "lucide-react"
+import { Link, useNavigate } from "react-router-dom"
+
+import MarkdownRenderer from "@/components/MarkdownRenderer"
+import PageState from "@/components/PageState"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { useChatbot } from "@/hooks/useChatBot"
+
+type Citation = { id: number; title: string }
 
 export default function Chat() {
-  const { 
-    messages, 
+  const navigate = useNavigate()
+  const {
+    messages,
     input,
     handleInputChange,
     handleSubmit,
     isLoading,
-  } = useChatbot();
-  const onSubmit = (e:React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-    handleSubmit(e);
+    error,
+  } = useChatbot()
+
+  const onSubmit = (event: React.FormEvent) => {
+    event.preventDefault()
+    if (!input.trim()) return
+    handleSubmit(event)
   }
+
   return (
-    <div className="flex flex-col h-screen max-w-4xl mx-auto px-4 pb-2">
-      <Header title="DeepSeek Chat" showBackBtn={true}/>
-      {/* html 原生的滚动条 不太好看，体验不太好
-        shadcn ScrollArea 样式和体验上优化
-      */}
-      <div className="flex-1 min-h-0 border rounded-lg p-4 mb-4 bg-background overflow-y-auto">
-      {
-        messages.length === 0 ? (
-          <div className="text-center text-muted-foreground py-8">
-            Start a conversation with DeepSeek...
-          </div>
-        ): (
-          <div className="space-y-4">
-          {
-            messages.map((m, idx) => (
-               <div
-                key={idx}
-                className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                    m.role === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted'
-                  }`}
-                >
-                  {m.content}
+    <main className="mx-auto flex h-[calc(100dvh-3rem)] min-h-[30rem] w-full max-w-4xl flex-col gap-4 max-[760px]:h-[calc(100dvh-var(--bottombar-h)-3rem-env(safe-area-inset-bottom))] max-[760px]:min-h-0">
+      <header className="flex shrink-0 items-center gap-3">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate(-1)}
+          aria-label="返回"
+        >
+          <ArrowLeft className="size-5" aria-hidden="true" />
+        </Button>
+        <div className="min-w-0">
+          <h1 className="font-heading text-2xl font-extrabold sm:text-3xl">
+            游戏攻略助手
+          </h1>
+          <p className="text-sm text-foreground-2">基于站内帖子回答你的游戏问题</p>
+        </div>
+      </header>
+
+      <Card
+        padding="none"
+        className="min-h-0 flex-1 bg-card"
+        data-slot="chat-flow"
+      >
+        <div
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6"
+          aria-live="polite"
+        >
+          {messages.length === 0 ? (
+            <PageState
+              state="empty"
+              title="从一个具体问题开始"
+              description="例如角色养成、Boss 打法或资源规划。"
+              icon={<Bot aria-hidden="true" />}
+              compact
+              className="h-full min-h-48 border-0 bg-transparent"
+            />
+          ) : (
+            <div className="space-y-5">
+              {messages.map((message) => {
+                const isUser = message.role === "user"
+                const citations: Citation[] =
+                  message.role === "assistant" && Array.isArray(message.annotations)
+                    ? (message.annotations as Citation[])
+                    : []
+
+                return (
+                  <article
+                    key={message.id}
+                    data-testid="chat-message"
+                    data-role={isUser ? "user" : "assistant"}
+                    className={`flex min-w-0 items-start gap-2 ${
+                      isUser ? "flex-row-reverse" : "justify-start"
+                    }`}
+                  >
+                    <span
+                      className={`mt-1 flex size-8 shrink-0 items-center justify-center rounded-sm border-2 border-ink ${
+                        isUser
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-surface-warm text-foreground"
+                      }`}
+                      aria-hidden="true"
+                    >
+                      {isUser ? <UserRound className="size-4" /> : <Bot className="size-4" />}
+                    </span>
+                    <div
+                      className={`min-w-0 max-w-[min(82%,42rem)] rounded-sm border-2 border-ink px-4 py-3 shadow-sm sm:max-w-[75%] ${
+                        isUser
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-card text-foreground"
+                      }`}
+                    >
+                      {message.role === "assistant" ? (
+                        <MarkdownRenderer content={message.content} variant="chat" />
+                      ) : (
+                        <p className="break-words whitespace-pre-wrap">{message.content}</p>
+                      )}
+                      {citations.length > 0 ? (
+                        <div
+                          className={`mt-3 flex flex-wrap gap-2 border-t-2 pt-3 ${
+                            isUser ? "border-primary-foreground/40" : "border-border"
+                          }`}
+                          data-testid="chat-citations"
+                        >
+                          <span className="w-full text-xs font-bold opacity-75">相关帖子</span>
+                          {citations.map((citation) => (
+                            <Link
+                              key={citation.id}
+                              to={`/post/${citation.id}`}
+                              title={citation.title}
+                              data-testid="chat-citation-link"
+                              className="inline-flex min-h-11 min-w-0 max-w-full items-center rounded-pill border-2 border-ink bg-surface-warm px-3 py-2 text-xs font-bold text-foreground shadow-sm outline-none transition-transform hover:-translate-y-0.5 focus-visible:[box-shadow:var(--focus-ring)] motion-reduce:transform-none"
+                            >
+                              <span className="truncate">{citation.title}</span>
+                            </Link>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  </article>
+                )
+              })}
+
+              {isLoading ? (
+                <div className="flex items-start gap-2" data-testid="chat-loading">
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-sm border-2 border-ink bg-surface-warm">
+                    <Bot className="size-4" aria-hidden="true" />
+                  </span>
+                  <div className="flex min-h-11 items-center rounded-sm border-2 border-ink bg-card px-4 shadow-sm">
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-label="正在生成回答" />
+                  </div>
                 </div>
-              </div>
-            ))
-          }
-          { isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-muted rounded-lg px-4 py-2">
-                <span className="animate-pulse">...</span>
-              </div>
+              ) : null}
             </div>
           )}
-          </div>
-        )
-      }
-      </div>
-      <form onSubmit={onSubmit} className="flex gap-2 shrink-0">
-        <Input 
+        </div>
+      </Card>
+
+      {error ? (
+        <div data-slot="chat-error" className="shrink-0">
+          <PageState
+            state="error"
+            title="回答生成失败"
+            description="请稍后重新发送问题。已有对话不会被清除。"
+            compact
+            className="min-h-0 py-4"
+          />
+        </div>
+      ) : null}
+
+      <form onSubmit={onSubmit} className="flex shrink-0 items-center gap-2">
+        <Input
           value={input}
           onChange={handleInputChange}
           placeholder="Type your message..."
+          aria-label="输入问题"
           disabled={isLoading}
-          className="flex-1"
+          className="min-w-0 flex-1 bg-card"
         />
-        <Button type="submit" disabled={isLoading || !input.trim()}>
-        Send
+        <Button
+          type="submit"
+          variant="primary"
+          size="icon"
+          disabled={isLoading || !input.trim()}
+          aria-label="Send"
+        >
+          {isLoading ? (
+            <Loader2 className="size-5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+          ) : (
+            <Send className="size-5" aria-hidden="true" />
+          )}
         </Button>
       </form>
-    </div>
+    </main>
   )
 }

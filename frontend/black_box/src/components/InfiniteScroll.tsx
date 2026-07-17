@@ -1,15 +1,17 @@
 import {
   useRef,
   useEffect,
+  type FC,
+  type ReactNode,
 } from 'react';
 interface InfiniteScrollProps{
     hasMore:boolean;// 是否所有数据都加载了 分页到最后一页变为false
     isLoading?:boolean;// 滚动到底部开始加载更多，避免重复触发
     onLoadMore:()=>void;// 加载更多数据的回调函数 /api/posts?page=2&limit=10
-    children?:React.ReactNode; // InfiniteScroll 通用的滚动功能，滚动的内容可接受定制的传递的
+    children?:ReactNode; // InfiniteScroll 通用的滚动功能，滚动的内容可接受定制的传递的
 }
 
-const InfiniteScroll:React.FC<InfiniteScrollProps> = ({
+const InfiniteScroll:FC<InfiniteScrollProps> = ({
     hasMore,
     isLoading = false,
     onLoadMore,
@@ -36,14 +38,15 @@ const InfiniteScroll:React.FC<InfiniteScrollProps> = ({
     }
   },[onLoadMore,hasMore,isLoading])
   return (
-    <div>
+    <div className="min-w-0">
       {children}
       {/* Intersection Observer 监听的哨兵元素 */}
-      <div ref={sentinelRef}/>
+      <div ref={sentinelRef} className="h-px" aria-hidden="true" />
       {
         isLoading &&(
-          <div className="text-center py-4 text-sm text-muted-foreground">
-            加载中...
+          <div role="status" className="flex items-center justify-center gap-2 py-5 text-sm font-bold text-muted-foreground">
+            <span className="size-3 animate-pulse rounded-pill bg-primary motion-reduce:animate-none" aria-hidden="true" />
+            加载中…
           </div>
         )
       }

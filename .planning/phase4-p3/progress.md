@@ -1,0 +1,29 @@
+# 第四期 P3 进度
+
+- 2026-07-15：用户确认 P2 人工复验通过；实施主计划、04 设计和 `.planning/phase4-p2/` 已同步，活动计划切换到 `phase4-p3`。
+- 2026-07-15：开始 P3 七页真实实现与权威设计核对；本轮不修改业务源码、不新增 e2e、不提交 Git。
+- 2026-07-15：完成 Home/Search 及其 Zustand store 核对。确认 Home 的双维度竞态、switch 守卫、数据/滚动保持都必须原样保留；Search 的 q 缺口、纯 UI error 许可、`Post[]` 类型与遗留 `any` 死分支已记录。
+- 2026-07-15：完成 PostDetail/Compose/Chat/Mine/Login、API/类型、P1/P2 组件、路由和既有 e2e 核对。记录 PostDetail content/假入口/game 字段差异、评论栏 App Shell 避让、Mine 上传时序、Login 860px 断点及 Chat 行为锚点。
+- 2026-07-15：取得 P3 七页 lint 基线 6 errors/3 warnings；全部位于 Search/PostDetail/Compose/Login，P3 完成应归零并使全量基线至少降至 8 errors/0 warnings。发现 Compose 统一 Base UI Select 与现有 `selectOption` e2e 的直接冲突，待施工方案评审拍板。
+- 2026-07-15：先按代码事实订正 04：PostDetail 不展示接口未返回的游戏信息；Mine P3 保持选图后关闭 Drawer 的真实时序。P3 主计划已补真实文件矩阵、七页状态/响应式矩阵、逐页任务、差分 lint、回滚与最终 28 图/41 条门禁。
+- 2026-07-15：Compose Select 冲突在方案内采用“只维护既有测试操作、不新增/放宽断言”的确定方案；Search 通过可选 PostItem highlight 保持唯一卡片。完成静态残留与 Header 引用复核，开始最终自审。
+- 2026-07-15：自审发现 PostDetail 旧 `unliked` 与 P1 StatButton `idle` 契约冲突，以及触及 e2e 后差分 lint 不能保留其既有 `any`。方案已订正为只维护 Compose/Social 两个既有 spec 并类型归零；P3 全量 lint预期门禁相应收紧至不高于 4 errors/0 warnings。同步纠正 900px Login 应为双栏。
+- 2026-07-15：完成最终自审：P3 恰为 7 个 task、38 个可执行 checkbox；Home/Search/PostDetail/Compose/Chat/Mine/Login、41 条、28/28、四视口、data-state/P4 边界均有映射；P3 段无 TBD/TODO/模糊占位。当前等待用户确认方案，未实施 P3。
+- 2026-07-15：用户确认 P3 施工方案并授权仅实施 P3.1 Home。已冻结范围为 `Home.tsx` 与 P3/QA 文档，禁止改动 `useHomeStore`、API、路由、既有 e2e 及 P3.2 以后页面；开始迁移前行为基线。
+- 2026-07-15：迁移前目标测试首次未进入断言：`pnpm exec` 未解析本地 Playwright CLI；直接调用本地 CLI 后，Playwright 自动启动 Vite 读取 `@fontsource-variable/inter` 时触发 Windows 沙箱 `EPERM`。该问题与 P2 已登记环境差异一致，计划复用沙箱外显式 Vite 完成真实基线，不修改配置。
+- 2026-07-15：清理占用 5173 的首轮自动 Vite 后，以沙箱外唯一 Vite + Chromium 取得有效迁移前基线：`home.spec.ts` 4/4、`game-filter.spec.ts` 4/4，共 8 passed。
+- 2026-07-15：仅修改 `Home.tsx` 完成组合层迁移：接入 SearchBar、SildeShow、TagChip、PostItem、Loading；保留 store/effect/handler，增加真实 loading/empty 槽及 `xl` 两列。进入自动验证。
+- 2026-07-15：Home 定向 lint 0/0；全量 lint 保持 P2 基线 14 errors/3 warnings；沙箱外生产 build 通过（2086 modules）；迁移后 Home/game-filter 8/8 passed，Playwright 清单仍为 7 文件/41 条。
+- 2026-07-15：截图工具生成 `p3-home` 28/28，本页四张人工抽查通过；一次性非 e2e QA 实测 1440/900/390/320 列数 2/1/1/1、横向溢出 0、超长 chip 344×44，并验证分页 10→12、延迟旧响应不覆盖、少帖后切换、搜索 URL 与详情返回 `scrollY=500`。临时脚本已删除。
+- 2026-07-15：已回填 `docs/qa/phase4/p3-pages.md`、实施主计划和 04 实现状态。P3.1 自动门禁完成，停在用户 Home 人工验收；未实施 P3.2、未新增 e2e、未提交 Git。
+- 2026-07-15：最终文件状态复验：Home lint 0/0，full lint 14/3，build 2086 modules，相关 Playwright 8 passed，清单 7/41，静态旧视觉扫描 0 命中，截图 28 总计且 Home 4 张齐全，5173 无遗留 listener，`git diff --check` 通过。
+- 2026-07-15：用户人工验收 P3.1 Home 通过，并授权按 Search → PostDetail → Compose → Chat → Mine → Login 连续实施，六页保持页面级验证，最终统一停在 P3 整批人工验收；不进入 P4、不提交 Git。
+- 2026-07-15：完成 P3.2 Search。先回填 foundation 的 `PostItem.highlight` 纯展示契约；Search 消费 q、category 优先、500ms debounce、history persist 与 error 元数据均按方案落地。定向 lint 0/0、build 2086、auth-guard 11/11；一次性 QA 验证去重/category/error-empty/history/highlight，`p3-search` 28/28 并抽查四张 Search。临时脚本已删除。
+- 2026-07-15：完成 P3.3 PostDetail。正文采用 `content ?? brief`、评论项保持两层递归和原事件、点赞状态对齐 `liked|idle`；移动输入栏避让底部导航和安全区。定向 lint 0/0、build 2058、social 7/7；四视口几何实测横向溢出 0，输入栏/Sidebar/底栏边界与末评论可见性通过。
+- 2026-07-15：完成 P3.4 Compose。原生 select 迁移为 P1 Base UI Select，页面统一 Card/TagChip/Button；上传、请求字段、回拉详情、Home prepend 和导航编排保持。compose spec 仅适配控件操作并类型归零，迁移前后 5/5；定向 lint 0/0、build 2167，`p3-compose` 四张人工抽查通过。
+- 2026-07-15：完成 P3.5 Chat。仅迁移视图，JWT/SSE/annotation/阈值/store 未触碰；移除嵌套 `h-screen`，Header 零引用后删除。ai-chat 迁移前后 3/3、定向 lint 0/0、build 2166；四视口默认态及长回答/长引用几何 QA 通过。
+- 2026-07-15：完成 P3.6 Mine。删除无能力死入口，只保留摘要/头像/退出；Drawer trigger 改为真实 button，上传时序保持。Mine lint 0/0、build 2166、auth-guard 11/11；四视口及延迟响应 QA 验证 Drawer 先关、Loading 覆盖请求、头像 persist 成功。
+- 2026-07-15：完成 P3.7 Login。独立 auth shell 在 861/860 精确切换双/单栏，认证流程和强度算法保持，后端数组错误仅做显示规范化。定位并修复密码 suffix Button hover 后被 Input 截获的问题；auth 迁移前后 7/7、定向 lint 0/0、build 2166，四视口及精确断点/长错误/键盘 QA 通过。
+- 2026-07-15：完成 P3 整批自动门禁：P3 触及 lint 0/0，全量批准基线 4/0，build 2166，清单 7/41，全量 41 passed，终态 `p3` 28/28 并逐页四档检查。静态扫描仅保留 token cover gradient 与计划进入 P4 的唯一 confirm；当前等待用户整批人工验收，未进入 P4、未提交 Git。
+- 2026-07-15：首轮 P3 整批人工评审仅阻塞 Search 去重 ref 生命周期。一次性 route-mock QA 先复现 `A 稳定 → Enter A → B → A` 仅发出 `A,A,B`；最小修正为下一轮 debounce 必定消费标记、仅同值跳过，复验序列为 `A,A,B,A`。快速提交仍单请求、首次 q 单请求、category 优先、history-only persist 均保持；Search lint 0/0、全量 lint 4/0、build 2166、7/41 清单与 41 passed 均通过，28 张截图因无视觉变化保持有效。当前等待用户重新人工验收，不进入 P4。
+- 2026-07-15：用户确认 P3 整批人工验收通过，Search 评审修正闭环；实施主计划、04 设计与 P3 QA 已同步，允许切换到 P4 施工方案阶段。

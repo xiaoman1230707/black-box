@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>攻略助手 · GG 玩家社区</title>
+<link rel="stylesheet" href="../css/system.css" />
+<style>
+  .chat-wrap { display:grid; grid-template-columns: 280px 1fr; height: 100vh; }
+  .session-rail { border-right: 2px solid var(--fg); background: var(--surface); display:flex; flex-direction:column; }
+  .rail-head { padding: var(--space-5); border-bottom: 2px solid var(--fg); }
+  .rail-list { flex:1; overflow-y:auto; padding: var(--space-3); display:flex; flex-direction:column; gap:8px; }
+  .session-item { padding: 12px 14px; border-radius: var(--radius-sm); border: 2px solid transparent; cursor:pointer; transition: background var(--motion-fast); }
+  .session-item:hover { background: var(--surface-warm); }
+  .session-item.active { background: var(--surface-warm); border-color: var(--fg); box-shadow: 3px 3px 0 var(--fg); }
+  .session-title { font-weight:700; font-size: var(--text-sm); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .session-snip { font-size: var(--text-xs); color: var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:3px; }
+  .chat-col { display:flex; flex-direction:column; min-width:0; }
+  .chat-head { padding: var(--space-4) var(--space-6); border-bottom: 2px solid var(--fg); background: var(--surface); display:flex; align-items:center; gap:var(--space-3); }
+  .chat-scroll { flex:1; overflow-y:auto; padding: var(--space-8) 0; }
+  .chat-inner { max-width: 760px; margin-inline:auto; padding-inline: var(--space-6); display:flex; flex-direction:column; gap:var(--space-6); }
+  .msg { display:flex; gap:var(--space-4); }
+  .msg.me { flex-direction: row-reverse; }
+  .bubble { padding: 14px 18px; border-radius: var(--radius-md); border:2px solid var(--fg); max-width: 80%; line-height:1.6; box-shadow: 3px 3px 0 var(--fg); }
+  .msg.ai .bubble { background: var(--surface); border-bottom-left-radius: 4px; }
+  .msg.me .bubble { background: var(--accent); color: var(--accent-on); border-bottom-right-radius: 4px; }
+  .bubble strong { font-weight:800; }
+  .bubble ul { margin:8px 0; padding-left:18px; }
+  .quick-chips { display:flex; gap:10px; flex-wrap:wrap; }
+  .chip { padding:8px 14px; border:2px solid var(--fg); border-radius:var(--radius-pill); background:var(--surface); font-size:var(--text-sm); font-weight:600; cursor:pointer; box-shadow:2px 2px 0 var(--fg); }
+  .chip:hover { background: var(--accent); color: var(--accent-on); }
+  .composer { border-top:2px solid var(--fg); background:var(--surface); padding: var(--space-4) var(--space-6); }
+  .composer-inner { max-width:760px; margin-inline:auto; display:flex; gap:var(--space-3); align-items:flex-end; }
+  .composer textarea { flex:1; min-height:48px; max-height:140px; }
+  .guide-card { border:2px dashed var(--accent); border-radius:var(--radius-sm); padding:var(--space-4); background:var(--surface-warm); margin-top:10px; font-size:var(--text-sm); }
+  @media (max-width:760px){ .chat-wrap { grid-template-columns: 1fr; } .session-rail { display:none; } .main { padding-bottom:0; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" data-od-id="sidebar">
+    <div class="brand"><span class="brand-mark">GG</span><span>玩家社区</span></div>
+    <a class="nav-link" href="home.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg><span>首页</span></a>
+    <a class="nav-link active" href="chatbot.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 16 0Z"/></svg><span>攻略助手</span></a>
+    <a class="nav-link" href="compose.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg><span>发帖</span></a>
+    <a class="nav-link" href="profile.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span>我的</span></a>
+    <div class="nav-sep"></div>
+    <div class="nav-foot"><a class="nav-user" href="profile.html"><span class="avatar avatar-md cv-4">阿</span><span class="nav-user-meta"><strong style="display:block;font-size:13px">阿岚</strong><span style="font-size:11px;color:var(--muted)">Lv.18 · 攻略组</span></span></a></div>
+  </aside>
+
+  <main class="main">
+    <div class="chat-wrap">
+      <!-- Session 列表 -->
+      <aside class="session-rail" data-od-id="sessions">
+        <div class="rail-head">
+          <button class="btn btn-primary btn-block" id="newSession"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>新建对话</button>
+        </div>
+        <div class="rail-list" id="sessionList">
+          <div class="session-item active" data-session="1"><div class="session-title">🗡️ 暗影回廊 噩梦攻略</div><div class="session-snip">守门人第三段怎么弹反…</div></div>
+          <div class="session-item" data-session="2"><div class="session-title">🎲 幻塔纪元 抽卡规划</div><div class="session-snip">还剩 80 抽该不该跳保底</div></div>
+          <div class="session-item" data-session="3"><div class="session-title">🌾 农场开荒第一年</div><div class="session-snip">春季作物优先级排序</div></div>
+          <div class="session-item" data-session="4"><div class="session-title">📡 联机 NAT3 排查</div><div class="session-snip">端口转发设置完还是连不上</div></div>
+        </div>
+      </aside>
+
+      <!-- 对话区 -->
+      <section class="chat-col">
+        <header class="chat-head">
+          <span class="brand-mark" style="width:34px;height:34px;box-shadow:2px 2px 0 var(--fg)">AI</span>
+          <div><strong style="display:block">攻略助手</strong><span class="muted" style="font-size:var(--text-xs)">懂这类游戏 · 实时检索社区精华帖</span></div>
+          <span class="pill pill-soft" style="margin-left:auto">🟢 在线</span>
+        </header>
+
+        <div class="chat-scroll" id="chatScroll">
+          <div class="chat-inner" id="chatInner">
+            <div class="msg ai">
+              <span class="brand-mark" style="width:34px;height:34px;flex-shrink:0;box-shadow:2px 2px 0 var(--fg)">AI</span>
+              <div class="bubble">
+                嗨阿岚 👋 我是攻略助手。我读过社区里这款游戏的全部精华帖，可以帮你拆 BOSS、算抽卡期望、排查联机问题。直接问我，或点下面的快捷话题👇
+                <div class="quick-chips" style="margin-top:14px">
+                  <span class="chip">守门人怎么弹反？</span>
+                  <span class="chip">80 抽该不该跳保底</span>
+                  <span class="chip">NAT3 怎么降级</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="msg me">
+              <span class="avatar avatar-md cv-4">阿</span>
+              <div class="bubble">守门人第三段那个停顿我老是反应不过来，有什么判断技巧吗？</div>
+            </div>
+
+            <div class="msg ai">
+              <span class="brand-mark" style="width:34px;height:34px;flex-shrink:0;box-shadow:2px 2px 0 var(--fg)">AI</span>
+              <div class="bubble">
+                好问题！<strong>锈蚀守门人</strong>的三连横扫，第三段判定最稳的方式是<strong>听音效而不是看动作</strong>：
+                <ul><li>第三段挥砍前会有一声「金属摩擦」音效</li><li>听到立刻按反击键，比看动作快约 2 帧</li><li>弹反成功后它有 1.4s 硬直，够你打满一套轻攻击</li></ul>
+                <div class="guide-card">📌 引用自精华帖《噩梦难度 BOSS 全流程拆解》— 作者「手残也能过」，5.1k 赞</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="composer">
+          <div class="composer-inner">
+            <textarea class="textarea" id="chatInput" placeholder="问问这款游戏的任何攻略… (Enter 发送 / Shift+Enter 换行)" style="box-shadow:2px 2px 0 var(--fg)"></textarea>
+            <button class="btn btn-primary" id="sendBtn" style="height:48px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z"/></svg></button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script src="../js/app.js"></script>
+<script>
+  const inner = document.getElementById('chatInner');
+  const scroll = document.getElementById('chatScroll');
+  const input = document.getElementById('chatInput');
+  const aiMark = '<span class="brand-mark" style="width:34px;height:34px;flex-shrink:0;box-shadow:2px 2px 0 var(--fg)">AI</span>';
+  const toBottom = () => scroll.scrollTop = scroll.scrollHeight;
+
+  function addMsg(role, html) {
+    const el = document.createElement('div');
+    el.className = 'msg ' + role;
+    el.innerHTML = role === 'me'
+      ? `<span class="avatar avatar-md cv-4">阿</span><div class="bubble">${html}</div>`
+      : `${aiMark}<div class="bubble">${html}</div>`;
+    inner.appendChild(el); toBottom(); return el;
+  }
+
+  const replies = [
+    '收到，我帮你查了社区精华帖 📚 关键点是<strong>先稳节奏再求输出</strong>，贪刀是噩梦难度最大的死因。需要的话我可以把具体配装表也发给你。',
+    '按期望值算，<strong>80 抽跳保底的回本概率约 62%</strong>。如果你预算紧张，建议攒到大保底更稳；想搏一把的话现在跳也不亏。',
+    '这种情况八成是 <strong>UPnP 没生效</strong>。先在路由器后台手动做端口转发，再把主机设成静态 IP，基本就能从 NAT3 降到 NAT2 了。'
+  ];
+  let ri = 0;
+
+  function send() {
+    const t = input.value.trim();
+    if (!t) return;
+    addMsg('me', t.replace(/</g,'&lt;'));
+    input.value = '';
+    const typing = addMsg('ai', '<span class="muted">正在检索社区精华帖…</span>');
+    setTimeout(() => {
+      typing.querySelector('.bubble').innerHTML = replies[ri % replies.length];
+      ri++; toBottom();
+    }, 800);
+  }
+
+  document.getElementById('sendBtn').addEventListener('click', send);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
+  document.addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (chip) { input.value = chip.textContent; send(); }
+    const s = e.target.closest('.session-item');
+    if (s) { document.querySelectorAll('.session-item').forEach(x=>x.classList.remove('active')); s.classList.add('active'); }
+  });
+  document.getElementById('newSession').addEventListener('click', () => {
+    const list = document.getElementById('sessionList');
+    document.querySelectorAll('.session-item').forEach(x=>x.classList.remove('active'));
+    const el = document.createElement('div');
+    el.className = 'session-item active';
+    el.innerHTML = '<div class="session-title">💬 新的对话</div><div class="session-snip">开始问点什么吧…</div>';
+    list.prepend(el);
+    inner.innerHTML = '';
+    addMsg('ai', '新对话已开启 ✨ 想聊哪款游戏的攻略？');
+  });
+</script>
+</body>
+</html>

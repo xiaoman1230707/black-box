@@ -1,0 +1,54 @@
+# O1 调研进度
+
+## 2026-07-17
+
+- 已执行 planning-with-files 会话恢复检查。
+- 已读取 `AGENTS.md`，确认第四期已完成且当前未进入第五期。
+- 已冻结本轮只改设计/规划文档的边界。
+- 已创建 O1 专用规划目录，准备核对权威文档与真实代码。
+- 已核对 MainLayout/Topbar/SearchBar/Home/Search 引用链，并用 P6 1440/390 截图确认 Home 双搜索框。
+- 已核对 Chat/useChatBot/useChatStore/MarkdownRenderer/lib markdown 及现有测试接缝。
+- 发现当前 Chat 无显式自动滚动实现，已登记为现状差异，O1 不扩大范围补建。
+- 已核对 foundation/04/实施计划中两处需由 O1 窄范围覆盖的旧契约，并确定物理删除 Topbar、共享 renderer variant 两个方案。
+- 已创建 `docs/design/05-post-phase4-ux-optimization.md`，覆盖背景、范围、真实代码映射、方案比较、组件/数据流、安全、响应式、回滚、文件矩阵、实施批次和验收。
+- 已完成占位词、内部一致性、范围与文件引用自审；未修改业务代码、测试、依赖、配置、数据库、原型或 `AGENTS.md`，未提交 Git。
+- 用户已确认 05 设计，授权进入 O1 实施计划编写阶段；本轮继续只改文档，不直接实施。
+- 已编写 `docs/plans/05-post-phase4-ux-optimization-implementation-plan.md`，按 O1.0～O1.5 组织范围冻结、Topbar 物理删除、共享 MarkdownRenderer variant、Chat 接线、整体验收与人工验收后 e2e。
+- 已补脏工作树差分门禁：O1.0/O1.4 对禁改文件生成 SHA-256 前后清单，避免把历史 diff 误归 O1，也防止越界修改被既有改动掩盖。
+- 已完成占位词、文件矩阵、测试时机、回滚边界和命令可执行性自审；当前停在用户实施计划评审门禁，尚未实施 O1。
+- 用户已确认 O1 实施计划并授权开始施工。
+- O1.0 已生成 110 条受保护文件 SHA-256 清单；未读取 `.env` 或密钥。
+- O1.0 自动基线：unit 12 files/29 passed，build 2456 modules 成功，lint 保持批准的 3 errors/0 warnings，Playwright 7 files/41 passed。
+- 已生成 `docs/qa/phase4/screenshots/o1-before/` 28/28 张基线截图；抽查确认 Home 双搜索框和其他 App Shell 页全局顶栏现状。
+- 既有 capture 脚本固定输出到 `docs/qa/phase4/screenshots/{stage}`，已据实修正实施计划路径，不改变脚本。
+- 当前停在 O1.0 用户确认门禁；尚未修改产品代码或既有测试。
+- 用户已确认 O1.0 基线并授权 O1.1。
+- O1.1 已从 MainLayout 移除 Topbar，零引用后物理删除 `Topbar.tsx`；Chat 高度扣减由 7.5rem 收口为 3rem。
+- O1.1 定向 lint 0/0、build 2455 modules、相关 Playwright 18 passed、Topbar 零命中。
+- 已生成 `docs/qa/phase4/screenshots/o1-1/` 28/28；四视口 DOM 检查确认 Home/Search 各 1 个搜索框，其余业务页 0 个且无页面横向溢出。
+- 当前停在 O1.1 用户人工确认门禁；尚未实施 Markdown renderer variant 或 Chat Markdown 接线。
+- 用户已确认 O1.1 并授权进入下一阶段。
+- O1.2 按 TDD 完成：RED 为新增契约 7 failed / 既有 5 passed；GREEN 为 renderer 12 passed，连同 markdown policy 共 15 passed。
+- `MarkdownRenderer` 已形成默认 article 与紧凑 chat 两个语义 variant，但继续共用唯一解析与安全管线。
+- O1.2 定向 lint 0/0、build 2455 modules；`docs/qa/phase4/screenshots/o1-2/` 28/28，PostDetail/Compose article 抽查无回归。
+- Chat 当前仍未 import MarkdownRenderer；O1.3 尚未开始。当前停在 O1.2 用户人工确认门禁。
+- 用户已确认 O1.2 并授权进入 O1.3。
+- O1.3 按 TDD 完成：RED 为 assistant 语义失败/user 纯文本通过；GREEN 为 Chat 角色测试 2 passed。
+- Chat 现仅对 assistant 使用 `MarkdownRenderer variant="chat"`，user 仍为纯文本，citation 继续独立位于正文后。
+- 聚焦 unit 3 files/16 passed、定向 lint 0/0、build 2455 modules、既有 ai-chat 3 passed；受保护文件哈希差异 0。
+- 当前停在 O1.3 用户人工确认门禁；尚未进入 O1.4 全量回归、专项截图或真实流式人工验收。
+- 用户已确认 O1.3，并授权进入 O1.4 完整回归与人工验收准备。
+- O1.4 全量自动门禁完成：unit 13 files/39 passed；build 2455 modules；O1 定向 lint 0/0；全量 lint 保持批准的 3 errors/0 warnings；Playwright 列表与全量结果均为 7 files/41 passed。
+- 已生成 `docs/qa/phase4/screenshots/o1/` 默认态 28/28，以及 `docs/qa/post-phase4-ux-optimization/screenshots/o1-chat/` 专项 4/4。
+- Chat mock 专项四视口通过：页面无横向溢出，table/pre 仅局部横滚，user 纯文本、assistant Markdown、XSS 拦截及 citation 顺序符合契约。
+- 真实 AI QA 本次约 6.9 秒完成，`variant="chat"` renderer 与语义节点可见；临时检查脚本已删除。
+- 受保护文件 SHA-256 前后均为 110 条、差异 0；Topbar 与危险渲染静态扫描均为零命中。
+- O1.4 已实施并回填文档，当前停在用户人工验收硬门禁；未进入 O1.5、未修改 Playwright、未提交 Git。
+- 为用户人工验收保留 `http://localhost:5173` 与 `http://localhost:3000/api`；启动复核发现既有 5173 为 IPv6 监听，误启动的 5174 副本已终止，最终仅保留目标端口。
+- 用户已人工复验 O1.4：单一搜索框、无整体横向溢出、assistant Markdown、user 纯文本、局部横滚、独立 citation 与 console 均通过；已授权进入 O1.5。
+- O1.5 增量 Playwright 首轮 7/8：Home 测试用 `name: '搜索'` 模糊匹配到“清除搜索词”和“搜索”两个按钮，属于测试选择器错误；已收紧为 `exact: true`，未改产品代码或行为断言。
+- O1.5 增量测试修正后 8/8 passed；最终 Playwright 清单和全量均为 8 files/46 passed。
+- 最终 unit 13 files/39 passed、build 2455 modules、O1.5 测试文件定向 lint 0/0；全量 lint 保持批准的 3 errors/0 warnings 历史基线。
+- 已回填 `00-foundation.md` 的无 Topbar App Shell、Home/Search SearchBar 复用和 `MarkdownRenderer article|chat` 契约；05 设计、实施计划与 QA 均更新为终态。
+- O1 已实现、已人工验收并完成 e2e 锁定；未提交 Git，不自动进入第五期。
+- 最终静态核对首条 PowerShell 命令因括号正则嵌入 `$()` 产生解析错误，未执行检查、未修改文件；拆分为普通变量赋值后复核通过：8 个 spec、App Shell 3 条、Chat 5 条、Topbar/危险渲染零命中。
