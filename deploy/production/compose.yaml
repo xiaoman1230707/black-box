@@ -1,0 +1,148 @@
+name: black-box
+
+x-tool-service: &tool-service
+  image: ${API_IMAGE:?API_IMAGE is required}
+  read_only: true
+  tmpfs:
+    - /tmp:size=64m,mode=1777
+  restart: "no"
+  profiles:
+    - tools
+
+x-database-tool: &database-tool
+  <<: *tool-service
+  env_file:
+    - ${DATABASE_ENV_FILE:?DATABASE_ENV_FILE is required}
+  depends_on:
+    db:
+      condition: service_healthy
+  networks:
+    - db_net
+
+services:
+  db:
+    image: ${POSTGRES_IMAGE:?POSTGRES_IMAGE is required}
+    env_file:
+      - ${POSTGRES_ENV_FILE:?POSTGRES_ENV_FILE is required}
+    command:
+      - postgres
+      - -c
+      - shared_buffers=128MB
+      - -c
+      - max_connections=30
+      - -c
+      - work_mem=4MB
+      - -c
+      - maintenance_work_mem=64MB
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    volumes:
+      - type: bind
+        source: ${POSTGRES_DATA_DIR:?POSTGRES_DATA_DIR is required}
+        target: /var/lib/postgresql/data
+    networks:
+      - db_net
+    mem_limit: 640m
+    cpus: 0.75
+    pids_limit: 200
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  api:
+    image: ${API_IMAGE:?API_IMAGE is required}
+    env_file:
+      - ${RUNTIME_ENV_FILE:?RUNTIME_ENV_FILE is required}
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      TRUST_PROXY: one-hop
+      NODE_OPTIONS: --max-old-space-size=512
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - ${API_BIND_ADDRESS:-127.0.0.1}:${API_PORT:-3000}:3000
+    volumes:
+      - type: bind
+        source: ${UPLOADS_DIR:?UPLOADS_DIR is required}
+        target: /app/uploads
+    networks:
+      - db_net
+      - egress_net
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    mem_limit: 768m
+    cpus: 1.0
+    pids_limit: 256
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  migrate:
+    <<: *database-tool
+    command:
+      - node
+      - node_modules/prisma/build/index.js
+      - migrate
+      - deploy
+      - --schema
+      - prisma/schema.prisma
+
+  seed-games:
+    <<: *database-tool
+    command: ["node", "dist/src/scripts/seed-games.js"]
+
+  rebuild-tags:
+    <<: *database-tool
+    command: ["node", "dist/src/scripts/rebuild-tags.js"]
+
+  seed-demo:
+    <<: *database-tool
+    env_file:
+      - ${DATABASE_ENV_FILE:?DATABASE_ENV_FILE is required}
+      - ${DEMO_SEED_ENV_FILE:?DEMO_SEED_ENV_FILE is required}
+    command: ["node", "dist/src/scripts/seed-demo-posts.js"]
+    volumes:
+      - type: bind
+        source: ${UPLOADS_DIR:?UPLOADS_DIR is required}
+        target: /app/uploads
+
+  embedding-backfill:
+    <<: *database-tool
+    env_file:
+      - ${DATABASE_ENV_FILE:?DATABASE_ENV_FILE is required}
+      - ${EMBEDDING_ENV_FILE:?EMBEDDING_ENV_FILE is required}
+    networks:
+      - db_net
+      - egress_net
+    command: ["node", "dist/src/scripts/backfill-embeddings.js"]
+
+  ai-preflight:
+    <<: *tool-service
+    env_file:
+      - ${AI_PREFLIGHT_ENV_FILE:?AI_PREFLIGHT_ENV_FILE is required}
+    networks:
+      - egress_net
+    command: ["node", "/opt/black-box-tools/ai-preflight.mjs"]
+    volumes:
+      - type: bind
+        source: ./scripts
+        target: /opt/black-box-tools
+        read_only: true
+
+networks:
+  db_net:
+    internal: true
+  egress_net:

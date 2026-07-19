@@ -1,0 +1,39 @@
+{
+  "releaseSha": "replace-with-reviewed-40-character-git-sha",
+  "createdAtUtc": "replace-with-ISO-8601-UTC-time",
+  "backend": {
+    "image": "black-box-api:replace-with-release-sha",
+    "imageId": "replace-with-local-image-id",
+    "archiveSha256": "replace-with-image-archive-sha256",
+    "nodeBase": {
+      "tag": "node:24.18.0-bookworm-slim",
+      "indexDigest": "sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d",
+      "linuxAmd64ManifestDigest": "sha256:d45d78e7929b46875bbd4e29bea672d5bc48186c6c3588306521c815e78352d6"
+    }
+  },
+  "postgres": {
+    "tag": "postgres:16.14-bookworm",
+    "indexDigest": "sha256:92620daddcd947f8d5ab5ba66e848702fe443d87fed30c4cea8e389fd78dfc55",
+    "linuxAmd64ManifestDigest": "sha256:c95fd5346040eba2de3c435e14874af18f5d681fb5848d4f081dbead0878af28"
+  },
+  "database": {
+    "migrationStatus": "replace-with-verified-status",
+    "dumpSha256": "replace-with-dump-sha256"
+  },
+  "uploads": {
+    "archiveSha256": "replace-with-uploads-archive-sha256"
+  },
+  "vercel": {
+    "sourceSha": "replace-with-same-release-sha",
+    "deploymentId": "replace-with-vercel-deployment-id",
+    "immutableUrl": "https://deployment.example.invalid",
+    "productionAlias": "https://app.example.invalid",
+    "environmentVerified": false
+  },
+  "rollback": {
+    "backendImage": "replace-with-previous-reviewed-image",
+    "vercelDeploymentId": "replace-with-previous-deployment-id",
+    "databaseDumpSha256": "replace-with-matched-dump-sha256",
+    "uploadsArchiveSha256": "replace-with-matched-uploads-sha256"
+  }
+}
