@@ -61,7 +61,10 @@ $rng.Dispose()
 - CORS 只允许该 origin，以及 `GET/POST/DELETE/OPTIONS` 和 `Authorization/Content-Type`；不启用 cookie credentials。
 - 直连或代理不受信时使用 `TRUST_PROXY=false`。
 - 只有应用前方是同机/loopback 的受控反向代理时使用 `TRUST_PROXY=loopback`，确保限流读取可信客户端 IP。不要在公网直连时信任任意转发头。
+- 生产 Docker 拓扑使用 `TRUST_PROXY=one-hop`，映射为 Express 数字 `1`。该值仅在宿主 `127.0.0.1:3000` 是唯一容器端口映射、3000 不公网开放、Nginx 是唯一入口且覆盖 `X-Forwarded-For` 为 `$remote_addr` 时成立；任一条件不成立必须回退 `false` 并停止发布，不得改成信任任意代理或整个 Docker 网段。
 - 反向代理须原样转发 Chat 流式响应，不缓冲 `text/plain` data stream，并保留 `x-vercel-ai-data-stream: v1`。
+
+生产容器文件以 `deploy/production/compose.yaml` 和 `backend/backend/posts/Dockerfile` 为准。默认 Compose 启动不得执行 migration、seed、embedding 或 AI 预检；这些命令只存在于 `tools` profile，并逐项使用 `docker compose run --rm` 和独立授权。`GET /api` 仅证明 Nest liveness，发布 readiness 必须再通过 `pg_isready` 与 `GET /api/posts?page=1&limit=1` 的真实 Prisma 查询。
 
 ## 6. 限流部署边界
 

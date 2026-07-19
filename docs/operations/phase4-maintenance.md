@@ -44,7 +44,7 @@ pnpm maintenance:uploads -- --apply --backup-confirmed --protect-hours=24
 
 ## 4. 演示 seed
 
-只在开发或专用演示数据库执行，生产数据库禁止运行。`seed:demo` 需要 `DATABASE_URL` 与 `DEMO_USER_PASSWORD`，不需要 AI key：
+默认只在开发或专用演示数据库执行，已有生产数据库禁止运行。`seed:demo` 需要 `DATABASE_URL` 与 `DEMO_USER_PASSWORD`，不需要 AI key：
 
 ```powershell
 pnpm seed:demo
@@ -53,6 +53,18 @@ pnpm seed:demo
 manifest 固定 5 名演示作者、35 帖、评论/点赞/viewCount 与 10 张图片。清理键严格为“manifest 作者+标题”和“演示作者+fixture originalname”，不会删除演示作者名下未列入 manifest 的帖子。game/tag 按名字查真实 ID。
 
 图片先从仓库 fixture 生成确定性原图/thumbnail：运行前已存在的输出只复用、不覆盖；仅本次新建路径进入补偿集合。随后数据库写入位于 interactive Prisma transaction。失败时数据库回滚并删除本次新图片；补偿失败会逐项报告残留并非零退出，此时必须人工核对并从备份恢复，不能声称完全回滚。
+
+### 4.1 全新作品展示生产库的窄例外
+
+仅当生产库是本次首次部署创建、尚无用户数据、尚未开放写入且已有空库/空 uploads 恢复点时，允许按生产部署门禁逐项执行一次：
+
+1. `node node_modules/prisma/build/index.js migrate deploy --schema prisma/schema.prisma`
+2. `node dist/src/scripts/seed-games.js`
+3. `node dist/src/scripts/rebuild-tags.js`
+4. `node dist/src/scripts/seed-demo-posts.js`
+5. `node dist/src/scripts/backfill-embeddings.js`
+
+每一步都需要独立数据库写入授权；第4步另需文件写入授权，第5步另需外部AI费用授权。任一步非零立即停止，不自动重试或继续下一步。embedding 对全新库只补 null，不带 `--all`。该例外不适用于已有生产库、恢复后的生产库或已开放写入的数据库，也不得挂入 Compose 默认启动、容器入口或自动发布流程。
 
 ## 5. Embedding 回填与组合命令
 
