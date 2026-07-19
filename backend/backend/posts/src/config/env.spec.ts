@@ -1,4 +1,4 @@
-import { validateEnvironment } from './env';
+import { resolveExpressTrustProxy, validateEnvironment } from './env';
 
 const validRuntime = {
   NODE_ENV: 'development',
@@ -131,6 +131,33 @@ describe('validateEnvironment', () => {
     expect(env.frontendOrigin).toBe('https://app.example.com');
     expect(env.trustProxy).toBe('loopback');
   });
+
+  it('accepts one-hop proxy trust for the controlled Nginx topology', () => {
+    const env = validateEnvironment('runtime', {
+      ...validRuntime,
+      TRUST_PROXY: 'one-hop',
+    });
+
+    expect(env.trustProxy).toBe('one-hop');
+  });
+
+  it('maps only the supported proxy trust values to Express settings', () => {
+    expect(resolveExpressTrustProxy(false)).toBe(false);
+    expect(resolveExpressTrustProxy('loopback')).toBe('loopback');
+    expect(resolveExpressTrustProxy('one-hop')).toBe(1);
+  });
+
+  it.each(['true', '1', '2', '10.0.0.0/8', 'proxy'])(
+    'rejects unsupported proxy trust value %s',
+    (trustProxy) => {
+      expect(() =>
+        validateEnvironment('runtime', {
+          ...validRuntime,
+          TRUST_PROXY: trustProxy,
+        }),
+      ).toThrow('TRUST_PROXY must be false, loopback, or one-hop');
+    },
+  );
 
   it('accepts explicit AI deadlines and rejects invalid timeout values', () => {
     const env = validateEnvironment('runtime', {

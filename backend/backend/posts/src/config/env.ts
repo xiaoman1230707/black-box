@@ -1,6 +1,7 @@
 type NodeEnvironment = 'development' | 'test' | 'production';
 type EnvironmentProfile = 'runtime' | 'database' | 'embedding' | 'demoSeed';
 type EnvironmentSource = Readonly<Record<string, string | undefined>>;
+type TrustProxy = false | 'loopback' | 'one-hop';
 
 interface DatabaseEnv {
   nodeEnv: NodeEnvironment;
@@ -30,7 +31,7 @@ interface RuntimeEnv extends DatabaseEnv {
   tokenSecret: string;
   publicBaseUrl: string;
   frontendOrigin: string;
-  trustProxy: false | 'loopback';
+  trustProxy: TrustProxy;
   deepseek: {
     apiKey: string;
     baseUrl: string;
@@ -196,6 +197,13 @@ const throwIfInvalid = (issues: string[]) => {
   }
 };
 
+const resolveExpressTrustProxy = (
+  value: TrustProxy,
+): false | 'loopback' | 1 => {
+  if (value === 'one-hop') return 1;
+  return value;
+};
+
 function validateEnvironment(
   profile: 'runtime',
   source?: EnvironmentSource,
@@ -267,9 +275,11 @@ function validateEnvironment<P extends EnvironmentProfile>(
   }
 
   const trustProxyValue = source.TRUST_PROXY?.trim() || 'false';
-  const trustProxy = trustProxyValue === 'loopback' ? 'loopback' : false;
-  if (trustProxyValue !== 'false' && trustProxyValue !== 'loopback') {
-    issues.push('TRUST_PROXY must be false or loopback');
+  let trustProxy: TrustProxy = false;
+  if (trustProxyValue === 'loopback' || trustProxyValue === 'one-hop') {
+    trustProxy = trustProxyValue;
+  } else if (trustProxyValue !== 'false') {
+    issues.push('TRUST_PROXY must be false, loopback, or one-hop');
   }
 
   const rateLimits = Object.fromEntries(
@@ -333,6 +343,7 @@ const getRuntimeEnv = () => {
 
 export {
   getRuntimeEnv,
+  resolveExpressTrustProxy,
   validateEnvironment,
   type DatabaseEnv,
   type DemoSeedEnv,
@@ -340,4 +351,5 @@ export {
   type EnvironmentProfile,
   type EnvironmentSource,
   type RuntimeEnv,
+  type TrustProxy,
 };
