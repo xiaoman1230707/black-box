@@ -1,0 +1,137 @@
+[
+  {
+    "group": "default",
+    "viewport": "1440x1000",
+    "page": "mine",
+    "clientWidth": 1440,
+    "scrollWidth": 1440,
+    "scrollHeight": 1000,
+    "innerHeight": 1000
+  },
+  {
+    "group": "default",
+    "viewport": "1440x1000",
+    "page": "my-posts",
+    "clientWidth": 1440,
+    "scrollWidth": 1440,
+    "scrollHeight": 1000,
+    "innerHeight": 1000
+  },
+  {
+    "group": "default",
+    "viewport": "1440x1000",
+    "page": "my-likes",
+    "clientWidth": 1440,
+    "scrollWidth": 1440,
+    "scrollHeight": 1000,
+    "innerHeight": 1000
+  },
+  {
+    "group": "default",
+    "viewport": "900x1000",
+    "page": "mine",
+    "clientWidth": 900,
+    "scrollWidth": 900,
+    "scrollHeight": 1000,
+    "innerHeight": 1000
+  },
+  {
+    "group": "default",
+    "viewport": "900x1000",
+    "page": "my-posts",
+    "clientWidth": 900,
+    "scrollWidth": 900,
+    "scrollHeight": 1088,
+    "innerHeight": 1000
+  },
+  {
+    "group": "default",
+    "viewport": "900x1000",
+    "page": "my-likes",
+    "clientWidth": 900,
+    "scrollWidth": 900,
+    "scrollHeight": 1109,
+    "innerHeight": 1000
+  },
+  {
+    "group": "default",
+    "viewport": "390x844",
+    "page": "mine",
+    "clientWidth": 390,
+    "scrollWidth": 390,
+    "scrollHeight": 967,
+    "innerHeight": 844
+  },
+  {
+    "group": "default",
+    "viewport": "390x844",
+    "page": "my-posts",
+    "clientWidth": 390,
+    "scrollWidth": 390,
+    "scrollHeight": 1999,
+    "innerHeight": 844
+  },
+  {
+    "group": "default",
+    "viewport": "390x844",
+    "page": "my-likes",
+    "clientWidth": 390,
+    "scrollWidth": 390,
+    "scrollHeight": 1999,
+    "innerHeight": 844
+  },
+  {
+    "group": "default",
+    "viewport": "320x740",
+    "page": "mine",
+    "clientWidth": 320,
+    "scrollWidth": 320,
+    "scrollHeight": 1015,
+    "innerHeight": 740
+  },
+  {
+    "group": "default",
+    "viewport": "320x740",
+    "page": "my-posts",
+    "clientWidth": 320,
+    "scrollWidth": 320,
+    "scrollHeight": 1907,
+    "innerHeight": 740
+  },
+  {
+    "group": "default",
+    "viewport": "320x740",
+    "page": "my-likes",
+    "clientWidth": 320,
+    "scrollWidth": 320,
+    "scrollHeight": 1979,
+    "innerHeight": 740
+  },
+  {
+    "group": "states",
+    "viewport": "390x844",
+    "page": "my-posts-empty",
+    "clientWidth": 390,
+    "scrollWidth": 390,
+    "scrollHeight": 844,
+    "innerHeight": 844
+  },
+  {
+    "group": "states",
+    "viewport": "390x844",
+    "page": "my-likes-error",
+    "clientWidth": 390,
+    "scrollWidth": 390,
+    "scrollHeight": 844,
+    "innerHeight": 844
+  },
+  {
+    "group": "states",
+    "viewport": "390x844",
+    "page": "my-likes-load-more-error",
+    "clientWidth": 390,
+    "scrollWidth": 390,
+    "scrollHeight": 2243,
+    "innerHeight": 844
+  }
+]

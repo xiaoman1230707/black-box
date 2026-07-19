@@ -20,6 +20,8 @@ const Chat = lazy(()=>import('@/pages/Chat'))
 const PostDetail = lazy(()=>import('@/pages/post'))
 const Search = lazy(()=>import('@/pages/Search'))
 const Compose = lazy(()=>import('@/pages/Compose'))
+const MyPosts = lazy(()=>import('@/pages/MyPosts'))
+const MyLikes = lazy(()=>import('@/pages/MyLikes'))
 
 export default function RouterConfig(
   {children}: {children?: React.ReactNode}
@@ -41,6 +43,8 @@ export default function RouterConfig(
                         {/* 受保护页:路由级守卫单一来源 */}
                         <Route path='chat' element={<RequireAuth><Chat /></RequireAuth>} />
                         <Route path='mine' element={<RequireAuth><Mine /></RequireAuth>} />
+                        <Route path='mine/posts' element={<RequireAuth><MyPosts /></RequireAuth>} />
+                        <Route path='mine/likes' element={<RequireAuth><MyLikes /></RequireAuth>} />
                         {/* 发帖页:二期已替换为真实表单 */}
                         <Route path='compose' element={<RequireAuth><Compose /></RequireAuth>} />
                     </Route>

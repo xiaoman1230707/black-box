@@ -1,5 +1,6 @@
 import { useRef, useState } from "react"
-import { LogOut, Upload } from "lucide-react"
+import { Link } from "react-router-dom"
+import { FileText, Heart, LogOut, Upload } from "lucide-react"
 
 import { uploadAvatar } from "@/api/upload"
 import Loading from "@/components/Loading"
@@ -132,6 +133,55 @@ export default function Mine() {
           </div>
         </CardContent>
       </Card>
+
+      <section className="mt-6 min-w-0 space-y-3" aria-labelledby="personal-content-heading">
+        <div>
+          <h2 id="personal-content-heading" className="font-heading text-xl font-extrabold">
+            个人内容
+          </h2>
+          <p className="mt-1 text-sm text-foreground-2">查看我发布和收藏的帖子。</p>
+        </div>
+
+        <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
+          <Button
+            render={<Link to="/mine/posts" />}
+            nativeButton={false}
+            variant="outline"
+            size="lg"
+            className="h-auto min-h-20 w-full justify-start gap-3 whitespace-normal px-4 py-3 text-left"
+            data-testid="mine-posts-link"
+          >
+            <span className="grid size-10 shrink-0 place-items-center rounded-sm border-2 border-ink bg-surface-warm">
+              <FileText className="size-5" aria-hidden="true" />
+            </span>
+            <span className="min-w-0">
+              <span className="block break-words font-heading text-base font-extrabold">我的发布</span>
+              <span className="mt-0.5 block break-words text-xs font-medium text-foreground-2">
+                浏览我发布过的帖子
+              </span>
+            </span>
+          </Button>
+
+          <Button
+            render={<Link to="/mine/likes" />}
+            nativeButton={false}
+            variant="outline"
+            size="lg"
+            className="h-auto min-h-20 w-full justify-start gap-3 whitespace-normal px-4 py-3 text-left"
+            data-testid="mine-likes-link"
+          >
+            <span className="grid size-10 shrink-0 place-items-center rounded-sm border-2 border-ink bg-secondary">
+              <Heart className="size-5" aria-hidden="true" />
+            </span>
+            <span className="min-w-0">
+              <span className="block break-words font-heading text-base font-extrabold">我的收藏</span>
+              <span className="mt-0.5 block break-words text-xs font-medium text-foreground-2">
+                浏览我点赞过的帖子
+              </span>
+            </span>
+          </Button>
+        </div>
+      </section>
 
       <Button
         variant="destructive"

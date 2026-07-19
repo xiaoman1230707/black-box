@@ -391,7 +391,7 @@
 
 ### 5.1 路由表组织
 - 维持现有 `<Routes>` 组件式 + `lazy()` 代码分割(`router/index.tsx`);**不再用 `<AliveScope>` / react-activation keep-alive**——首页"返回保持"靠 store(`useHomeStore` 的 `posts/page/currentTag` 全局不丢)+ sessionStorage 滚动恢复(`scroll` 事件实时存当前位置、返回 `scrollTo`;不在卸载时存,避免 DOM 已拆致 scrollY 被截断)。
-- 路由依附于 Sidebar 导航结构:主导航 4 项(首页 `/`、攻略助手 `/chat`、发帖、我的 `/mine`)对应一级路由;二级页(详情 `/post/:id`、搜索 `/search`、登录 `/login`)为页面内入口/独立路由。
+- 路由依附于 Sidebar 导航结构:主导航 4 项(首页 `/`、攻略助手 `/chat`、发帖、我的 `/mine`)对应一级路由;二级页(详情 `/post/:id`、搜索 `/search`、个人内容 `/mine/posts`、`/mine/likes`、登录 `/login`)为页面内入口/独立路由。个人内容两页只由 Mine 内部入口到达，不加入 Sidebar 一级导航。
 - **App Shell 包裹范围**:业务页经 `MainLayout`（= App Shell:Sidebar + main + 内容容器）渲染；`/login`(auth)走**独立布局**,不进 App Shell。
 
 ### 5.2 守卫(needsLogin)统一写法
@@ -401,6 +401,14 @@
 
 ### 5.3 占位组件约定
 - 一期受保护页(发帖/详情/`/mine`/登录注册由二期、`/chat` 由三期填真)先以**占位组件**存在:能渲染、能被守卫拦截、能验证三断点布局,但无真实业务功能。保护的是已配好的占位路由,而非已完成页面。
+
+### 5.4 O2 个人内容二级路由与共享列表事实
+
+- `/mine/posts`、`/mine/likes` 均位于现有 `MainLayout` 内，并分别由 `<RequireAuth>` 保护；未登录统一进入 `/login`。
+- 两页不是 Sidebar 一级目的地，仅由 Mine 的“我的发布”“我的收藏”语义 Link 进入。
+- 两页以薄页面配置同一个 `PersonalPostListPage`，使用页面本地状态，不新增持久化 store，也不接入 `useHomeStore`。
+- 列表只组合现有 `PostItem`、`PageState`、`InfiniteScroll`、`Button`，长列表复用 `App.tsx` 的全局唯一 `BackToTop`，不建立第二套卡片、状态或滚动组件。
+- “我的收藏”是 `UserLikePost`/点赞关系的展示名称；前端读取 `/posts/liked`，不引入 Favorite 语义或第二套收藏状态。
 
 ---
 

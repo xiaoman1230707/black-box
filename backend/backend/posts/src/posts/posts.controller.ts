@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { PostQueryDto } from './dto/post-query.dto';
+import { PostPageQueryDto } from './dto/post-page-query.dto';
 import { CreatePostDto } from './dto/create-post.dto';
 // 鉴权目录下的路由守卫
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
@@ -21,6 +22,9 @@ function resolveUserId(req: any): number | undefined {
     return req.user?.id ? Number(req.user.id) : undefined;
 }
 
+type AuthenticatedRequest = {
+  user: { id: string | number };
+};
 
 
 @Controller('/posts')
@@ -38,6 +42,26 @@ export class PostsController{
     async getTags(){
         return this.postsService.findAllTags();
     }
+
+  // O2:只读取当前 JWT 用户发布的帖子，不接受外部 userId
+  @Get('mine')
+  @UseGuards(JwtAuthGuard)
+  async getMyPosts(
+    @Query() query: PostPageQueryDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.postsService.findMine(query, Number(req.user.id));
+  }
+
+  // O2:UI 称“我的收藏”，数据语义继续复用 UserLikePost
+  @Get('liked')
+  @UseGuards(JwtAuthGuard)
+  async getLikedPosts(
+    @Query() query: PostPageQueryDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.postsService.findLiked(query, Number(req.user.id));
+  }
 
     // 获取单篇文章(公开读 + 可选鉴权)
     @Get(':id')

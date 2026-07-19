@@ -43,5 +43,7 @@ export interface Credentail {
 
 export interface PostsResponse {
   items: Post[];
-  // 其他字段如 total, page 等按需添加
+  total: number;
 }
+
+export type PersonalPostListKind = "published" | "liked";

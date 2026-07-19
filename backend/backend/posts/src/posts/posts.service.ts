@@ -3,31 +3,55 @@ import {
     BadRequestException,
 } from '@nestjs/common';
 import { PostQueryDto } from './dto/post-query.dto';
+import { PostPageQueryDto } from './dto/post-page-query.dto';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmbeddingService } from '../embedding/embedding.service';
 import { publicMediaUrl } from '../config/public-url';
+import type { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PostsService{
     constructor(private prisma: PrismaService, private embedding: EmbeddingService){}
 
-    async findAll({page,limit,tag,gameId} : PostQueryDto, userId?: number){
-        const skip = ((page || 1) - 1) * (limit || 10);
-        const tagFilter = tag && tag !== 'all'
-            ? {
-                tags: {
-                    some: {
-                        tag: {
-                            name: tag
-                        }
-                    }
-                }
-              }
-            : {};
-        // 三期§六:按游戏筛选(可选),与 tagFilter AND 叠加;count 与 findMany 共用同一 where
-        const gameFilter = gameId ? { gameId } : {};
-        const where = { ...tagFilter, ...gameFilter };
+  async findAll(
+    { page, limit, tag, gameId }: PostQueryDto,
+    userId?: number,
+  ) {
+    const tagFilter: Prisma.PostWhereInput =
+      tag && tag !== 'all'
+        ? {
+            tags: {
+              some: {
+                tag: {
+                  name: tag,
+                },
+              },
+            },
+          }
+        : {};
+    // 三期§六:按游戏筛选(可选),与 tagFilter AND 叠加;count 与 findMany 共用同一 where
+    const gameFilter: Prisma.PostWhereInput = gameId ? { gameId } : {};
+    const where = { ...tagFilter, ...gameFilter };
+    return this.findPostPage(where, { page, limit }, userId);
+  }
+
+  // O2:当前 JWT 用户本人发布，身份只由 controller 的 req.user.id 传入
+  async findMine(query: PostPageQueryDto, userId: number) {
+    return this.findPostPage({ userId }, query, userId);
+  }
+
+  // O2:“收藏”继续读取 UserLikePost，不创建第二套数据语义
+  async findLiked(query: PostPageQueryDto, userId: number) {
+    return this.findPostPage({ likes: { some: { userId } } }, query, userId);
+  }
+
+  private async findPostPage(
+    where: Prisma.PostWhereInput,
+    { page = 1, limit = 10 }: PostPageQueryDto,
+    userId?: number,
+  ) {
+    const skip = (page - 1) * limit;
         const [total,posts] =  await Promise.all([
             this.prisma.post.count({ where }),
             this.prisma.post.findMany({
