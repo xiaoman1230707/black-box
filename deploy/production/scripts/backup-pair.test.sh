@@ -66,6 +66,7 @@ cleanup_fixture() {
 run_backup() {
   local backup_root="$1"
   local running_services="${2:-api db}"
+  local script="${3:-$backup_script}"
   PATH="$fixture/bin:$PATH" \
   RELEASE_ENV_FILE="$fixture/release.env" \
   BACKUP_ROOT="$backup_root" \
@@ -73,7 +74,15 @@ run_backup() {
   RELEASE_SHA="$release_sha" \
   API_IMAGE_DIGEST="$image_digest" \
   FAKE_RUNNING_SERVICES="$running_services" \
-    "$backup_script"
+    "$script"
+}
+
+install_fake_git_failure() {
+  cat >"$fixture/bin/git" <<'EOF'
+#!/usr/bin/env bash
+exit 127
+EOF
+  chmod +x "$fixture/bin/git"
 }
 
 test_rejects_backup_inside_uploads() {
@@ -137,6 +146,84 @@ test_manifest_contains_restore_identity() {
   ((passed += 1))
 }
 
+test_allows_installed_layout_sibling_backup() {
+  new_fixture
+  local install_root="$fixture/srv/black-box"
+  local installed_script="$install_root/compose/$release_sha/scripts/backup-pair.sh"
+  mkdir -p "$(dirname "$installed_script")" "$install_root/backups"
+  cp "$backup_script" "$installed_script"
+  chmod +x "$installed_script"
+
+  local output status
+  set +e
+  output="$(run_backup "$install_root/backups" 'api db' "$installed_script" 2>&1)"
+  status=$?
+  set -e
+  [[ $status -eq 0 ]] || fail "installed sibling backup exited $status: $output"
+  [[ -f "$install_root/backups/20260719T000000Z-$release_sha/manifest.json" ]] || fail 'installed sibling backup did not complete'
+  cleanup_fixture
+  ((passed += 1))
+}
+
+test_rejects_real_git_worktree() {
+  new_fixture
+  local repository="$fixture/repository"
+  mkdir -p "$repository/backups"
+  git init -q "$repository"
+
+  local output status
+  set +e
+  output="$(run_backup "$repository/backups" 2>&1)"
+  status=$?
+  set -e
+  [[ $status -eq 2 ]] || fail "Git worktree backup exited $status: $output"
+  [[ "$output" == *"BACKUP_ROOT must be outside the repository"* ]] || fail 'missing Git worktree boundary error'
+  [[ ! -s "$FAKE_DOCKER_LOG" ]] || fail 'docker was called before Git worktree rejection'
+  cleanup_fixture
+  ((passed += 1))
+}
+
+test_rejects_git_directory_when_git_unavailable() {
+  new_fixture
+  install_fake_git_failure
+  local repository="$fixture/fallback-directory"
+  mkdir -p "$repository/.git" "$repository/backups"
+
+  local output status
+  set +e
+  output="$(run_backup "$repository/backups" 2>&1)"
+  status=$?
+  set -e
+  [[ $status -eq 2 ]] || fail "fallback .git directory backup exited $status: $output"
+  [[ "$output" == *"BACKUP_ROOT must be outside the repository"* ]] || fail 'missing .git directory boundary error'
+  [[ ! -s "$FAKE_DOCKER_LOG" ]] || fail 'docker was called before .git directory rejection'
+  cleanup_fixture
+  ((passed += 1))
+}
+
+test_rejects_git_file_when_git_unavailable() {
+  new_fixture
+  install_fake_git_failure
+  local worktree="$fixture/fallback-worktree"
+  mkdir -p "$worktree/backups"
+  printf 'gitdir: ../metadata/worktrees/example\n' >"$worktree/.git"
+
+  local output status
+  set +e
+  output="$(run_backup "$worktree/backups" 2>&1)"
+  status=$?
+  set -e
+  [[ $status -eq 2 ]] || fail "fallback .git file backup exited $status: $output"
+  [[ "$output" == *"BACKUP_ROOT must be outside the repository"* ]] || fail 'missing .git file boundary error'
+  [[ ! -s "$FAKE_DOCKER_LOG" ]] || fail 'docker was called before .git file rejection'
+  cleanup_fixture
+  ((passed += 1))
+}
+
+test_allows_installed_layout_sibling_backup
+test_rejects_real_git_worktree
+test_rejects_git_directory_when_git_unavailable
+test_rejects_git_file_when_git_unavailable
 test_rejects_backup_inside_uploads
 test_rejects_existing_timestamp_directory
 test_rejects_running_write_tool

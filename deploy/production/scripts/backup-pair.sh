@@ -28,15 +28,43 @@ if [[ ! -f "$RELEASE_ENV_FILE" || ! -d "$UPLOADS_DIR" ]]; then
   exit 2
 fi
 
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 BACKUP_ROOT="$(realpath -m "$BACKUP_ROOT")"
 UPLOADS_DIR="$(realpath "$UPLOADS_DIR")"
-case "$BACKUP_ROOT" in
-  "$repo_root"|"$repo_root"/*)
-    printf 'BACKUP_ROOT must be outside the repository\n' >&2
+
+existing_ancestor="$BACKUP_ROOT"
+while [[ ! -d "$existing_ancestor" ]]; do
+  parent="$(dirname "$existing_ancestor")"
+  if [[ "$parent" == "$existing_ancestor" ]]; then
+    printf 'Unable to resolve an existing BACKUP_ROOT ancestor\n' >&2
     exit 2
-    ;;
-esac
+  fi
+  existing_ancestor="$parent"
+done
+
+inside_git_worktree=false
+if command -v git >/dev/null 2>&1; then
+  if git_state="$(git -C "$existing_ancestor" rev-parse --is-inside-work-tree 2>/dev/null)"; then
+    [[ "$git_state" == true ]] && inside_git_worktree=true
+  fi
+fi
+
+if [[ "$inside_git_worktree" == true ]]; then
+  printf 'BACKUP_ROOT must be outside the repository\n' >&2
+  exit 2
+fi
+
+if [[ "$inside_git_worktree" == false ]]; then
+  marker_ancestor="$existing_ancestor"
+  while true; do
+    if [[ -d "$marker_ancestor/.git" || -f "$marker_ancestor/.git" ]]; then
+      printf 'BACKUP_ROOT must be outside the repository\n' >&2
+      exit 2
+    fi
+    [[ "$marker_ancestor" == / ]] && break
+    marker_ancestor="$(dirname "$marker_ancestor")"
+  done
+fi
+
 case "$BACKUP_ROOT" in
   "$UPLOADS_DIR"|"$UPLOADS_DIR"/*)
     printf 'BACKUP_ROOT must not be inside UPLOADS_DIR\n' >&2
