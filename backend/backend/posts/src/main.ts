@@ -10,6 +10,7 @@ import { resolveExpressTrustProxy, validateEnvironment } from './config/env';
 async function bootstrap() {
   const env = validateEnvironment('runtime');
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.enableShutdownHooks(['SIGTERM', 'SIGINT'], { useProcessExit: true });
 
   app.enableCors(createCorsOptions(env.frontendOrigin));
   const trustProxy = resolveExpressTrustProxy(env.trustProxy);
