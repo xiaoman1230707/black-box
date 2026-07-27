@@ -238,7 +238,7 @@ async function main() {
         `定向替换旧帖子 ${result.deletedPosts}, 旧文件记录 ${result.deletedFiles}。`,
     );
     console.log(
-      'titleEmbedding 暂为空；需要向量时运行 pnpm embedding:backfill -- --all。',
+      'titleEmbedding 暂为空；需要向量时运行 pnpm embedding:backfill。',
     );
   } catch (error) {
     const compensation = await compensateCreatedFiles(createdPaths);

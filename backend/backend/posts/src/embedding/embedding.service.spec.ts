@@ -33,11 +33,16 @@ describe('EmbeddingService', () => {
       .calls[0][0] as unknown as {
       timeout: number;
       maxRetries: number;
-      configuration: { timeout: number; maxRetries: number };
+      configuration: {
+        timeout: number;
+        maxRetries: number;
+        fetch: typeof globalThis.fetch;
+      };
     };
     expect(options.timeout).toBe(20);
     expect(options.maxRetries).toBe(0);
     expect(options.configuration).toMatchObject({ timeout: 20, maxRetries: 0 });
+    expect(options.configuration.fetch).toEqual(expect.any(Function));
   });
 
   it('rejects a provider call that remains pending', async () => {
@@ -53,5 +58,12 @@ describe('EmbeddingService', () => {
 
     await rejection;
     jest.useRealTimers();
+  });
+
+  it('rejects an invalid provider vector', async () => {
+    mockEmbedQuery.mockResolvedValue([1, 2, 3]);
+    const service = new EmbeddingService();
+
+    await expect(service.embed('query')).rejects.toThrow(/1536/);
   });
 });

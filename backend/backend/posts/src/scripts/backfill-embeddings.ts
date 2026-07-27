@@ -2,64 +2,70 @@ import '../config/load-env';
 import { PrismaClient } from '@prisma/client';
 import { OpenAIEmbeddings } from '@langchain/openai';
 import { validateEnvironment } from '../config/env';
+import { createEmbeddingDeadlineFetch } from '../embedding/embedding-safety';
+import {
+  resolveBackfillMode,
+  runEmbeddingBackfill,
+} from './backfill-embeddings.runner';
 
-// 三期·标题向量基建:回填帖子标题向量。两种模式:
-//   - 默认(无参):只补 titleEmbedding 为 null 的(幂等补缺,如发帖时 embedding 失败留的 null)。
-//   - --all:全量重生成所有帖(换 embedding 模型时用——新旧向量空间不可比、必须全部重算)。
-// 运行:npx ts-node src/scripts/backfill-embeddings.ts        (补缺)
-//       npx ts-node src/scripts/backfill-embeddings.ts --all  (换模型后全量重生成)
-// 模型须与 embedding.service 的 EMBEDDING_MODEL 一致(此处独立定义,避免运维脚本耦合 Nest 模块/装饰器)。
-// 稳健点:避开 Prisma 对 Json? 字段 null 查询的 DbNull/JsonNull 坑——查全量后在 JS 过滤 == null。
+// 默认模式只补 titleEmbedding 为 null 的帖子。非生产维护可显式使用 --all；
+// production 在读取数据库和调用供应商前拒绝 --all。
+const embeddingEnv = validateEnvironment('embedding');
+const forceAll = resolveBackfillMode(
+  process.argv.slice(2),
+  embeddingEnv.nodeEnv,
+);
+const timeoutMs = embeddingEnv.aiTimeouts.embedding;
 const prisma = new PrismaClient();
-const FORCE_ALL = process.argv.includes('--all');
-const { openai, aiTimeouts } = validateEnvironment('embedding');
-const EMBEDDING_MODEL = openai.embeddingModel;
 const embeddings = new OpenAIEmbeddings({
   configuration: {
-    apiKey: openai.apiKey,
-    baseURL: openai.baseUrl,
-    timeout: aiTimeouts.embedding,
+    apiKey: embeddingEnv.openai.apiKey,
+    baseURL: embeddingEnv.openai.baseUrl,
+    timeout: timeoutMs,
     maxRetries: 0,
+    fetch: createEmbeddingDeadlineFetch(timeoutMs),
   },
-  model: EMBEDDING_MODEL,
-  timeout: aiTimeouts.embedding,
+  model: embeddingEnv.openai.embeddingModel,
+  timeout: timeoutMs,
   maxRetries: 0,
 });
 
 async function main() {
   console.log(
-    `模型=${EMBEDDING_MODEL}  模式=${FORCE_ALL ? '--all 全量重生成' : '只补 null'}`,
+    `模型=${embeddingEnv.openai.embeddingModel}  模式=${forceAll ? '--all 全量重生成' : '只补 null'}`,
   );
-  const all = await prisma.post.findMany({
+  const posts = await prisma.post.findMany({
     select: { id: true, title: true, titleEmbedding: true },
   });
-  const todo = FORCE_ALL ? all : all.filter((p) => p.titleEmbedding == null);
-  console.log(`帖子总数 ${all.length},待处理 ${todo.length}`);
-
-  let ok = 0;
-  let fail = 0;
-  // 单条失败跳过(留 null、可重跑),不中断整个脚本
-  for (const p of todo) {
-    try {
-      const vec = await embeddings.embedQuery(p.title);
+  const result = await runEmbeddingBackfill({
+    posts,
+    forceAll,
+    timeoutMs,
+    embed: (title) => embeddings.embedQuery(title),
+    updateEmbedding: async (postId, vector) => {
       await prisma.post.update({
-        where: { id: p.id },
-        data: { titleEmbedding: vec },
+        where: { id: postId },
+        data: { titleEmbedding: vector },
       });
-      ok++;
-      console.log(`  ✓ [${p.id}] ${p.title}`);
-    } catch (e) {
-      fail++;
-      console.error(`  ✗ [${p.id}] ${p.title} —— embedding 失败,跳过:`, e);
-    }
-  }
-  console.log(`回填完成:成功 ${ok},失败 ${fail}(失败项保持 null,可重跑)`);
-  if (fail > 0) process.exitCode = 1;
+    },
+    onSuccess: (post) => console.log(`  ✓ [${post.id}] ${post.title}`),
+    onFailure: (post, error) =>
+      console.error(
+        `  ✗ [${post.id}] ${post.title} —— embedding 失败,跳过:`,
+        error,
+      ),
+  });
+
+  console.log(`帖子总数 ${result.total},待处理 ${result.pending}`);
+  console.log(
+    `回填完成:成功 ${result.succeeded},失败 ${result.failed}(失败项保持 null,可重跑)`,
+  );
+  if (result.failed > 0) process.exitCode = 1;
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
+  .catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
   })
-  .finally(() => prisma.$disconnect());
+  .finally(async () => prisma.$disconnect());
