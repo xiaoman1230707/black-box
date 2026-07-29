@@ -4,7 +4,7 @@
 >
 > 日期：2026-07-19
 >
-> 状态：已确认；D0 已关闭，D1 已实施并于 2026-07-19 通过人工验收，待独立提交；未进入 D2
+> 状态：已实施并人工验收通过；D0～D8全部关闭；未自动进入第五期
 >
 > 定位：第四期及 O1/O2 完成后的独立生产部署设计批次；不代表第五期启动
 
@@ -24,7 +24,7 @@
 
 - O2 已实现、已人工验收并关闭，且已在 D0 以 `feat(personal): add personal post lists` 独立提交；未进入第五期。
 - 前端：16 files / 53 unit passed。
-- 后端：17 suites / 74 Jest passed。
+- 后端：O2关闭时为17 suites / 74 Jest passed；D1新增部署配置测试后，当前候选`RELEASE_SHA`已在D2验证为17 suites / 81 passed。
 - Playwright：9 files / 51 passed。
 - 我的发布 `/mine/posts`、我的收藏 `/mine/likes` 已是产品现状。
 
@@ -133,9 +133,17 @@ flowchart LR
 
 ### 5.1 身份与 SSH
 
+**D4.0 实测终态：** 初次连接失败的历史根因是管理流量来源未命中当时 TCP 22 的唯一 UFW `/32` 规则，SYN 在到达 sshd 认证前被拦截；并非公钥、`authorized_keys` 权限、`MaxStartups`、conntrack、OOM 或资源故障。当前管理入口已迁移至 TCP `2222`，本机受控 Host alias 固定 deploy 身份与该端口。TUN 保持开启，经 ECS 专属规则进入代理策略组；客户端不能绑定组内具体节点是已接受的能力边界。部署期间保持当前节点不变，出口变化立即暂停，不自动增加来源或放宽 CIDR。
+
+UFW 与阿里云安全组仅允许批准代理出口 IPv4 `/32` 访问 TCP `2222`；公网 TCP `22`、`80`、`443`、`3000`、`3389`、`5432` 均未开放，无 IPv6 SSH allow。sshd 可在主机内部继续监听 22 以保留配置兼容，但该端口不构成公网入口。修复后新鲜只读复核确认 Docker/containerd 正常、Nginx 停止、业务容器与镜像为 0、持久目录为空且权限正确、资源阈值满足、无异常监听或 failed unit；D4.0 据此关闭。
+
 - 新建普通 `deploy` 用户，使用已验证 SSH key；禁止密码登录和 root 远程登录。
 - `deploy` 只在执行经批准运维动作时使用 `sudo`。不加入 `docker` 组，因为该组等价于 root 权限。
+- deploy 的 sudo 认证仍由用户在自己的交互终端完成，不配置 `NOPASSWD`。为支持已授权批次中的 agent 非交互命令，独立 drop-in 仅设置 `timestamp_type=global` 与 `timestamp_timeout=120`；agent 不接触密码，批次结束可用 `sudo -K` 立即清除缓存。该机制不替代任何 E/DB/AI/DNS/V/R 写入门禁。
 - 保持 22 端口安全组为当前可信地址 `/32`；本机 SSH 走已确认的 ECS IP 直连规则，不在文档或仓库记录 IP。
+- 后续连接统一使用deploy身份与已配置的`black-box-ecs` Host alias，SSH命令固定为`ssh -l deploy black-box-ecs`（SCP/SFTP/rsync同样显式指定deploy），并保持TUN开启、通过已人工验证的专属DIRECT规则直连；连接本身不再逐次申请独立S授权。所有ECS写入、数据库写入、AI费用、DNS、Vercel与释放动作仍按各自E/DB/AI/DNS/V/R门禁独立授权，连接能力不构成写入授权。
+- SSH 加固固定关闭 `X11Forwarding` 与 `AllowTcpForwarding`；首批部署无 agent forwarding 用途，因此同时关闭 `AllowAgentForwarding`。若未来确有代理转发需求，必须作为独立安全变更重新评审，不能在部署过程中临时开启。
+- D3.1 控制台基线确认 3389、3000、5432、80、443及IPv6 SSH均无入方向规则；公网IPv4 ICMP仅作为用户已批准的临时诊断例外保留，D8下线/收口清单必须重新核对是否移除。
 - 安装系统安全更新，启用时间同步；不安装桌面、RDP 或与部署无关的软件。
 
 ### 5.2 宿主目录
@@ -161,6 +169,12 @@ flowchart LR
 ### 5.3 内存、Swap 与进程边界
 
 - 创建 2GiB Swap，权限 `0600`，持久挂载并在重启后复核；`vm.swappiness=10`。Swap 只用于避免瞬时 OOM，不是常态容量。
+- Swap运行态、权限、fstab唯一性与项目sysctl已在D3.3门禁A人工验收通过；D3.6单次重启后已真实确认自动启用约2GiB、fstab唯一且swappiness=10，D3整体验收已关闭。
+- D3.3实测云厂商持久swappiness定义位于`/etc/sysctl.d/99-apsara-sysctl.conf`且当前值为0；该文件保持不变。项目使用排序更后的独立`/etc/sysctl.d/99-black-box-memory.conf`覆盖为10，实施前备份fstab、云厂商定义及完整sysctl来源清单，并验证最终唯一有效值。Swap写入与Ubuntu软件包更新是两个独立E授权，前者人工验收前不得执行后者。
+- D3.5只读实测确认目标持久目录尚未创建、UID/GID 10001未占用、Docker daemon尚无独立配置、UFW inactive且规则为空；Compose仍只把API绑定宿主loopback，PostgreSQL无宿主发布端口。持久目录与Docker日志、UFW启用必须分为两个独立E授权，80/443继续留在后续独立门禁。
+- D3.5门禁A已人工验收关闭：按矩阵创建持久目录，并以原子写入落地Docker默认`json-file`的`10m × 3`限制；Docker/containerd重启复验通过，Nginx logrotate、UFW和监听端口保持不变。远端临时施工证据已在仓库外保全后按精确路径清理。`postgres`当前故意保持`root:root 0700`，D4启动前必须按精确PostgreSQL镜像UID/GID复核并调整。
+- D3.5门禁B已人工验收关闭：唯一入站放行为可信管理IPv4 `/32`到`22/tcp`，默认deny-in/allow-out/deny-routed，保留`IPV6=yes`但无IPv6 SSH allow；80/443/3000/3389/5432均未增加规则。第二个全新deploy会话、sudo、Docker与监听验证通过，远端临时证据在仓库外保全后已精确清理。
+- D3.6已在独立授权下仅执行一次操作系统重启；boot ID变化，首次恢复uptime为19.02秒。重启后SSH/sudo、Nginx、Docker、Swap、UFW、时间同步、cloud-init、dpkg/hold、failed units、目录权限、资源与监听矩阵全部通过，配对证据已在仓库外完成SHA与manifest核验。用户人工验收后，登记的临时脚本、marker和已归档远端证据已按精确路径清理，正式配置复核无漂移，deploy sudo缓存与SSH连接均已清零；D3正式关闭，D4仍须独立方案与写入授权。
 - API 容器内存上限 768MiB，Node 设置 `--max-old-space-size=512`。
 - PostgreSQL 容器内存上限 640MiB；初始参数：`shared_buffers=128MB`、`max_connections=30`、`work_mem=4MB`、`maintenance_work_mem=64MB`。
 - 其余内存留给 Ubuntu、Nginx、Docker、文件缓存和短时运维任务。
@@ -191,6 +205,10 @@ flowchart LR
 
 ### 6.2 后端镜像契约
 
+发布源必须在 Git attributes 中固定 `*.sh text eol=lf`。发布前强制核对 Git blob、干净 worktree 与 deployment bundle 三层全部 Shell 文件均为 LF、CRLF计数为0，并在Linux原生Bash执行`bash -n`。服务器 staging 转码、忽略失败脚本或放宽语法门禁均被禁止；任何换行失败直接使候选失效并要求从修正后的新提交重建完整同 SHA 制品链。
+
+Deployment bundle 固定直接从Git对象生成：`git archive --format=tar.gz --output=<唯一.part> <RELEASE_SHA> deploy/production`，校验成功后再原子改名；不得先复制、checkout或index export到中间源码目录后再调用tar。Git for Windows的`git archive`仍会依据Git attributes与本机文本转换配置导出内容，因此“直接从Git对象生成”不能替代`*.sh text eol=lf`。自动化门禁必须实际执行同一路径，解包后证明每个Shell与对应Git blob逐字节一致。
+
 - 构建基础镜像使用与测试兼容的受支持 Node LTS，并以不可变 digest 锁定；当前开发机 Node 24.18.0、pnpm 11.9.0 仅作为调研事实，不直接等于生产镜像选择。
 - 使用 Corepack 和 lockfile frozen 安装；Linux builder 内编译 Sharp/Prisma 目标产物。
 - pnpm 构建脚本只使用中间层显式 `allowBuilds` 白名单；runtime 基础层仅加入 Prisma 明确需要的 OpenSSL，不携带编译工具或临时 workspace 配置。
@@ -202,6 +220,10 @@ flowchart LR
 - 镜像标签包含完整或不歧义短 `RELEASE_SHA`；服务器不以 `latest` 作为回滚依据。
 
 **D1 实测回填（2026-07-19）：** Node 24.18.0 Bookworm slim 与 PostgreSQL 16.14 Bookworm 已分别核对多平台 index 和 linux/amd64 manifest；PostgreSQL `05dd...` 已证实为 linux/386，不作为 amd64 依据。本地 `linux/amd64` 验证镜像已通过非 root、入口、healthcheck、native module、migration、初始化脚本与10张fixture检查；Compose默认服务与tools profile分离，并按 runtime/database/demoSeed/embedding/AI preflight 拆分最小 env 与网络；Nginx/Vercel/脚本契约和全量应用回归均通过。该镜像基于仍含D1未提交改动的验证上下文，只作为D1自动证据，不是生产候选；D2仍必须从后续干净 `RELEASE_SHA` 重建。
+
+**D2 实测回填（2026-07-19）：** 已从候选 `RELEASE_SHA` 的仓库外 detached worktree 重建 `linux/amd64` 镜像，并在 source/restore 两套独立本地 Compose project 中完成全新库的 migration、非 AI 四步初始化、配对备份和直接恢复演练。source 与 restore 的 35 帖、13 评论、31 点赞、10 条文件记录、3 条 migration、5 游戏各 7 帖及 21 个媒体/哨兵文件均一致；恢复栈未预跑 migration/seed。两个 project 已 down，端口已释放，镜像、archive、数据库、uploads 与备份保留等待人工验收。该证据不代表生产五步初始化完成，也不授权 ECS、Vercel、DNS 或真实 AI 操作。
+
+**D1 提交回填（2026-07-19）：** D1 经用户审查后拆为 `docs(deploy): define production release process`、`fix(config): support one-hop proxy trust`、`build(deploy): add production runtime topology` 三个本地提交；第三个提交形成候选 `RELEASE_SHA=38247ff057310e0f98125a0bbcafbfab2969877c`。提交后暂存区为空，工作树仅保留未进入发布源的用户 `CLAUDE.md` 改动；未 push、未连接 ECS、未操作数据库、AI、Vercel 或 DNS。
 
 ### 6.3 Compose 服务
 
@@ -269,6 +291,12 @@ prisma migrate deploy
 | 3. 内容类型标签 | `node dist/src/scripts/rebuild-tags.js` | 已迁移数据库、`DATABASE_URL`、编译脚本；执行前必须只读确认 Post/PostTag 均为 0 | 在空库可重复得到固定 5 个标签；脚本会先删除全部 PostTag 和 Tag，**对已有帖子不具备安全幂等性** | 破坏性目录初始化独立授权。非零立即停止；因当前脚本不是单事务，失败时重建全新空库或从该步前备份恢复，不在已有库自动重试 |
 | 4. 演示数据 | `node dist/src/scripts/seed-demo-posts.js` | 前两类目录完整、`DATABASE_URL`、`DEMO_USER_PASSWORD`、可写 uploads、编译后 fixtures | 仅按 manifest 作者+标题和 fixture originalname 定向替换；可在专用演示库复跑，但会重建 manifest 数据和推进主键，不是一般生产维护命令 | 数据库+文件真实写入独立授权。Prisma transaction 只覆盖数据库；仅本次新建文件参与补偿。非零或补偿失败即停止并报告残留 |
 | 5. 标题向量 | `node dist/src/scripts/backfill-embeddings.js` | seed 成功、`DATABASE_URL`、兼容 embedding key/base/model、1536维预检通过 | 全新库使用无参数模式，只补 `titleEmbedding == null`，成功项可保留且失败项可重跑；不使用 `--all` 无故重复外部调用 | 外部费用与数据库写入独立授权。单帖失败继续但最终非零；只要存在 null、非有限值或非1536维就不放行 |
+
+**生产进度回填（2026-07-23）：** 上表第1步migration已在D4.4唯一执行并通过，禁止重跑。第2步`seed-games`、第3步`rebuild-tags`、B2 `post-DB3 / pre-demo`与第4步`seed-demo`均已分别执行、验证并人工验收；DB-4终态为5 User、35 Post、35 PostTag、13 Comment、31 Like、10 File、20媒体、35条null embedding和0条non-null embedding，B2有效，API停止、原db healthy。D4.7-A / AI-1已唯一执行一次正式预检并人工验收通过。D4.7-B方案与无费用只读预检也已完成且供应商调用为0，但当前候选缺少完整body deadline和写前1536维有限数校验，禁止执行backfill。D4.7-B、B3及后续D4暂停，先按`docs/design/09-production-embedding-write-safety.md`生成新候选并重新通过零写入门禁。
+
+**生产终态回填（2026-07-27）：** 09批次已生成并部署新候选；唯一无参数backfill完成35/35条1536维有限数向量，B3远端/本地副本及API loopback恢复通过。上述2026-07-23段落保留为历史门禁证据，不再代表当前状态。
+
+**D4.5-A1方案回填（2026-07-23）：** `seed-games`真实入口为FIX镜像内`node dist/src/scripts/seed-games.js`，按`Game.name @unique`顺序upsert固定5个游戏，已存在时只更新描述、不覆盖cover。脚本不是单事务，失败可能留下前缀数据；因此DB-2只能单独执行一次，失败保留现场且不得自动重跑、恢复或进入DB-3。完整施工与只读预检矩阵见`docs/qa/production-deployment/d4-db2-seed-games-plan.md`。
 
 每个停点必须记录目标库身份、命令入口、开始/结束时间、退出码和只读结果，不记录连接串或 secret。任何一步失败都禁止自动进入下一步；一份“初始化整批授权”也不得解释为允许跳过中间失败停点。
 
@@ -391,8 +419,8 @@ DeepSeek 官方已公告旧 `deepseek-chat`/`deepseek-reasoner` 别名在 2026-0
 ### 11.3 embedding
 
 - 模型保持 `text-embedding-3-small`，维度必须为 1536。
-- 如果 `OPENAI_BASE_URL` 指向 OpenAI 官方 API，香港 ECS 部署门禁直接失败：OpenAI 官方支持地区列表当前未包含香港，禁止 VPN、代理或其他规避。
-- 只有用户确认当前兼容服务账号、上游模型、地区与条款均允许香港调用，才可使用现有兼容 base URL。
+- 生产供应商固定为302.AI OpenAI-compatible API；用户已明确接受帖子标题与搜索关键词由该供应商处理。禁止回退或直接调用OpenAI官方地址，禁止自动切换模型或供应商。
+- `OPENAI_BASE_URL`必须包含兼容API版本段，调用方再追加`/embeddings`；不得重复或遗漏版本段。真实endpoint、域名值、key和账号信息只进入ECS受控env，不进入Git文档或QA。
 - 从 ECS 对中性短文本发一次最小 embedding，请求成功后验证数组长度 1536、元素全为有限数；失败不得 seed/backfill，也不得私自换模型。
 - 302.AI 提供兼容 embedding 与按量计费，但其条款把当地及上游合规责任留给用户；技术可达不等于获得合规放行。
 
@@ -549,7 +577,8 @@ AI 真实调用只使用最小非敏感内容并记录状态/耗时，不记录 
 
 - Vercel：[Monorepo Root Directory](https://vercel.com/docs/monorepos)、[Vite](https://vercel.com/docs/frameworks/frontend/vite)、[环境变量](https://vercel.com/docs/environment-variables)、[部署环境](https://vercel.com/docs/deployments/environments)、[`vercel.json`](https://vercel.com/docs/project-configuration/vercel-json)、[自定义域名与 SSL](https://vercel.com/docs/domains/set-up-custom-domain)。
 - Docker：[Ubuntu 安装](https://docs.docker.com/engine/install/ubuntu/)、[Compose plugin](https://docs.docker.com/compose/install/linux/)、[Buildx](https://docs.docker.com/reference/cli/docker/buildx/build/)、[启动顺序](https://docs.docker.com/compose/how-tos/startup-order/)、[日志轮换](https://docs.docker.com/engine/logging/drivers/json-file/)。
-- PostgreSQL：[版本支持策略](https://www.postgresql.org/support/versioning/)、[官方 Docker 镜像](https://hub.docker.com/_/postgres)。
+- PostgreSQL：[版本支持策略](https://www.postgresql.org/support/versioning/)、[官方 Docker 镜像](https://hub.docker.com/_/postgres)、[Ubuntu PGDG APT仓库](https://www.postgresql.org/download/linux/ubuntu/)、[`pg_dump`主版本兼容](https://www.postgresql.org/docs/16/app-pgdump.html)。
+- Ubuntu：[OpenSSH Server](https://documentation.ubuntu.com/server/how-to/security/openssh-server/)、[Server系统要求](https://documentation.ubuntu.com/server/reference/installation/system-requirements/)。
 - Prisma：[生产 migration 命令](https://docs.prisma.io/docs/cli/migrate)、[migration history](https://www.prisma.io/docs/orm/prisma-migrate/understanding-prisma-migrate/migration-histories)。
 - Nginx：[HTTP proxy module](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)、[client body limit](https://nginx.org/en/docs/http/ngx_http_core_module.html)。
 - 阿里云：[安全组入门](https://www.alibabacloud.com/help/en/ecs/user-guide/start-using-security-groups)、[安全组场景](https://www.alibabacloud.com/help/en/ecs/user-guide/security-groups-for-different-use-cases)、[监控与日志](https://www.alibabacloud.com/help/en/ecs/user-guide/monitoring-and-logging)、[磁盘监控](https://www.alibabacloud.com/help/en/ecs/user-guide/view-the-monitoring-data-of-a-disk)、[账单明细](https://www.alibabacloud.com/help/en/ecs/view-billing-details)、[免费试用](https://www.alibabacloud.com/help/en/user-center/product-overview/learn-about-free-trials)、[释放实例](https://help.aliyun.com/en/ecs/user-guide/release-an-instance)、[DNS A 记录](https://www.alibabacloud.com/help/en/dns/pubz-add-parsing-record)。
@@ -574,3 +603,55 @@ AI 真实调用只使用最小非敏感内容并记录状态/耗时，不记录 
 - [x] 本文无模糊占位词或隐式范围扩张。
 
 本文已通过人工评审，下一步是独立生产部署实施计划；设计确认本身不授权云端、DNS、secret、数据库或发布写入。
+
+## 二十、当前实施状态（截至2026-07-23）
+
+- 旧候选`38247ff057310e0f98125a0bbcafbfab2969877c`因Shell换行契约缺失正式失效，禁止继续使用其镜像、bundle或远端staging。
+- 新候选固定为`6e182d477da82a74a0a447bfc7e1f1d77aa4faed`。该SHA的D1发布基线、linux/amd64镜像、D2 source/restore隔离恢复及D4.0本地传输制品已重新建立，并经用户人工验收通过。
+- 本地重建未调用AI或embedding，未连接ECS，未清理旧现场，也未恢复D4.1。该人工验收只关闭本地制品链，不自动授权ECS写入、数据库、secret、DNS、Vercel或Production切流。
+
+### D4.4关闭回填（2026-07-23）
+
+- D4.4历史阻塞保留：旧候选在60秒SIGTERM后exit 137、OOM=false。该镜像不再具备发布资格。
+- 08批次以`FIX_RELEASE_SHA=72350a77acf59ad179b9a89b19544c162033e0ae`完成生命周期与backup边界TDD、完整回归、同SHA制品重建、隔离恢复、ECS导入、生产兼容、API切换、生产SIGTERM和pre-DB2配对备份，并获用户最终人工验收。
+- 08批次关闭时的生产快照：FIX API与原db healthy；API仅绑定loopback；三条migration已完成，九张业务表为空，DB-2尚未执行。该项是D4.5-A2写入前历史基线。
+- B0、B1和“F6 release / pre-DB2”恢复点有效；旧镜像、旧release、F4/F5现场与失败证据继续保留。
+- D4.4正式关闭后，下一门禁曾为D4.5 DB-2 `seed-games`方案/独立写入授权；该项是A1/A2执行前历史状态，不覆盖下列最新进度。
+- D4.5-A1施工方案与完整只读预检已人工验收通过：FIX API与原db均healthy，三条migration保持finished，九张业务表仍为空，远端/本地pre-DB2恢复点完整可读，uploads为空且资源满足门禁。用户当时独立授权D4.5-A2执行一次DB-2 `seed-games`；D4.5-B继续专指DB-3 `rebuild-tags`。该条是A1时点的历史授权记录，当前状态以下方DB-3实施回填为准。
+- D4.5-A2已唯一执行一次并获用户人工验收：Docker one-off事件链为create/start/die/destroy且`exitCode=0`，数据库精确包含5个批准游戏、名称唯一，其他8张业务表仍为0，三条migration与空uploads均未变化。API按门禁保持停止，原db为running+healthy；D4.5-B未授权或执行。执行证据见`docs/qa/production-deployment/d4-db2-seed-games-report.md`。
+- D4.5-B方案与完整只读预检已完成：FIX、原db、停止API、3条migration、5个批准游戏、Post/PostTag/Tag=0、空uploads、pre-DB2恢复点及资源均未漂移。`rebuild-tags`固定先删PostTag、再删Tag、最后创建资讯/攻略/求助/评测/活动，且无外层事务；失败恢复只能回到seed-games之前并重新逐项授权。B2必须在DB-3人工验收后另行授权创建。详见`docs/qa/production-deployment/d4-db3-rebuild-tags-plan.md`。
+- D4.5-B唯一写入的历史实施快照：命令实际执行1次并以退出码0结束；Tag精确为资讯、攻略、求助、评测、活动且唯一，PostTag与其他非目标业务表保持0，5个Game、3条migration、空uploads及pre-DB2恢复点未漂移。唯一one-off事件链为create/attach/start/die(0)/destroy，API仍停止且原db healthy。该项随后已获人工验收并完成B2；seed-demo仍未执行。证据见`docs/qa/production-deployment/d4-db3-rebuild-tags-report.md`。
+- 用户已人工验收通过D4.5-B / DB-3，并独立授权仅创建、验证和下载B2 `post-DB3 / pre-demo`配对恢复点。该授权不包含seed-demo、embedding、AI、cleanup、restore或migration。
+- B2首次且唯一获授权执行在FIX备份脚本创建目录、停止API与dump之前失败：外层门禁脚本把变量声明为readonly后又以同名临时环境赋值，导致子脚本未取得绝对`BACKUP_ROOT`。没有B2 complete/`.incomplete`、远端导出或本地副本；未执行任何数据库业务写入或后续初始化。当前等待独立恢复授权，证据见`docs/qa/production-deployment/d4-b2-backup-stoppage.md`。
+- 用户授权恢复后，仅修正外层变量传递并使用全新唯一目标；远端B2已完成，四项文件、内部SHA、dump/tar、manifest、权限及3 migration/5 Game/5 Tag/空业务数据快照全部通过。唯一默认SFTP下载最终失败，本地只留下0字节`database.dump`，没有重试或切换协议；远端正式B2与导出均保留，等待独立传输恢复决策。seed-demo仍未执行。
+- 本地副本retry1授权要求先清除sudo timestamp；该唯一SSH会话在本地超时且没有返回完成标记，故无法证明远端sudo缓存状态。按再次超时即停约束未建立后续连接、未创建retry1目录、未发起SFTP；历史失败目录与远端B2均保持，seed-demo仍未执行。
+- 本地副本retry2已明确完成`sudo -K`并以`sudo -n true`退出1证明缓存清除；随后远端B2四项文件只读复核会话非零且无元数据输出。按失败即停未创建新本地目录或发起SFTP，未重跑备份或进入seed-demo。
+- 本地副本retry3在重新验证sudo缓存有效后，于正式B2首项SHA输出解析时因`cut`参数错误退出；失败早于远端导出目录创建。本次未复制文件、未清除sudo缓存、未创建本地retry1目录或发起SFTP，seed-demo仍未执行。
+- 本地副本retry4不再使用`cut`，但首项核对后的`printf`格式串被远端shell误解释为管道并退出；仍早于导出目录创建。未复制、未下载、未进入seed-demo。
+- 本地副本retry5将所有远端动作拆为离散命令；前三项文件全部匹配且`SHA256SUMS`存在，但其独立`stat`命令超时。未创建导出或下载；安全收尾已确认sudo timestamp清除，seed-demo仍未执行。
+- 受控自主retry6通过已审查的一次性脚本完成正式B2只读核对、deploy-owned导出与默认SFTP下载；本地四项大小/SHA、内部清单、dump、tar和manifest语义全部通过。用户已人工验收通过B2，正式恢复点与本地副本保留；deploy导出仅按精确路径清理，seed-demo未执行。
+- D4.6 / DB-4设计采用FIX镜像的唯一`seed-demo`入口：仅注入database/demo-seed env、内部db网络和uploads mount，无外网。它只定向替换manifest演示数据；文件先创建并记录本次新增路径，数据库写入由单个Prisma transaction覆盖，失败仅补偿本次新增文件。计划终态为5作者、35帖、35 PostTag、13评论、31点赞、10 File、20媒体且embedding全空。完整方案与预检矩阵见`docs/qa/production-deployment/d4-db4-seed-demo-plan.md`。
+- DB-4生产只读预检已完成：FIX镜像与原db身份、停止API、3 migration、5 Game、5 Tag、其余业务与embedding为0、空uploads、B2、demo env、Compose、10 fixtures、资源和无tool残留全部通过。deploy传输导出已精确清理，正式B2与本地副本保留。当前停在DB-4独立数据库/uploads写入授权门禁，`seed-demo`实际调用次数为0。
+- 用户独立授权后，DB-4正式Compose命令仅调用1次并退出0；唯一one-off事件链为create/attach/start/die(0)/destroy。终态为5 User、35 Post、35 PostTag、13 Comment、31 Like、10 File、20个固定媒体共404899 bytes且embedding为0；3 migration、5 Game、5 Tag与B2不变。API保持停止、原db healthy，无tool残留。用户已人工验收通过DB-4；该通过不自动授权B3、AI preflight或embedding。
+- D4.7-A / AI-1固定使用FIX release内`ai-preflight` tools service：仅注入`ai-preflight.env`并加入`egress_net`，无数据库网络、DATABASE_URL、JWT、seed密码或uploads。正式门禁最多一次DeepSeek最小流式请求与一次302.AI `text-embedding-3-small`请求；完整deadline、无自动重试、1536维有限数和脱敏输出契约见`docs/qa/production-deployment/d4-ai1-preflight-plan.md`。
+- D4.7-A无费用只读预检已通过FIX、env、Compose最小权限、容器、DB-4数据、20媒体、B2、资源及通用DNS/TLS；未访问供应商业务接口，真实调用为0。已知非Shell文本CRLF表示经只读规范化后与FIX Git blob精确一致，不构成内容漂移；当前只停在AI-1独立费用授权门禁。
+- 用户独立授权后，AI-1正式Compose命令仅调用1次并退出0：DeepSeek最小流式请求完整结束、耗时1578ms；302.AI最小embedding请求耗时591ms，结果精确1536维且全部有限。唯一one-off为create/attach/start/die(0)/destroy；DB-4、20媒体及B2不变，API停止、原db healthy。AI-1已人工验收通过；该结果不自动授权D4.7-B或35帖embedding。
+- D4.7-B / DB-5 + AI-2方案与无费用只读预检确认当前35条embedding全为null、标题合计722字符/2070 UTF-8 bytes，Compose最小权限、生产数据、媒体、B2与资源无漂移，供应商请求0。真实脚本逐帖串行且关闭LangChain/OpenAI SDK自动重试，但当前timeout不能证明覆盖完整body，写库前也未验证1536维和有限数；正式backfill因此阻塞，须先完成窄范围脚本修复、新候选重建与重新部署。详见`docs/qa/production-deployment/d4-db5-embedding-backfill-plan.md`。
+
+### D6 实现状态（2026-07-27）
+
+- 固定`RELEASE_SHA`已推送到独立发布分支；远端默认分支和当前脏工作树未进入发布源。
+- Vercel Production已从该完整SHA构建为Ready/Current制品，Root Directory、Vite、Production/Preview变量分层符合本设计。
+- 用户完成`FRONTEND_HOST`权威DNS写入后，平台显示Valid Configuration且TLS可用；真实DNS值仍只保存在受控平台。
+- 正式Home真实数据、精确CORS、SPA深链、匿名路由守卫及1440/900/390/320四档无页面级横向溢出已通过自动验证。
+- 前端deployment与后端镜像形成同SHA release pair；用户已完成正式域名人工验证，D6已人工验收关闭。D7已完成自动矩阵、36张Production截图、受控真实写链路、Search/Chat调用及生产只读终态审计，并于2026-07-28通过用户最终人工验收；D8已完成上线后备份、runbook、费用、下线演练、主机告警和通知可达性验证，07生产部署批次正式关闭。
+- 新候选人工通过后已完成一次ECS新鲜只读门禁：管理alias保持deploy/TCP 2222，当前来源匹配唯一批准`/32`；Docker/containerd、Nginx、UFW、资源、持久目录和旧现场均无漂移，新SHA release/compose/staging路径不存在。该只读通过不授权D4.1写入。
+
+### D8 运维交接状态（2026-07-28）
+
+- D7已完成自动矩阵、36张Production截图、受控真实链路和生产终态审计，并获用户最终人工验收。
+- D8.1已创建上线后database/uploads配对恢复点，并完成远端与仓库外本地副本的SHA、dump、tar及manifest验证；备份后API/db恢复healthy，生产数据和uploads无漂移。
+- 运维runbook已按当前事实收敛为TCP 2222受控alias、SHA级Compose目录、分层健康、证书续期、配对备份/恢复、AI与停写故障处置、费用清单和下线流程。
+- D8.3书面下线演练已完成，未实际释放ECS、磁盘、快照、EIP、DNS、Vercel或任何凭据。
+- D8.2已安装并验证LoongCollector 4.0.0，CPU、内存和磁盘三条实例告警已启用并绑定既有联系人组；唯一临时通知测试规则触发后，用户确认实际收到通知，临时规则已删除且三条正式规则保持不变。阿里云站点监控属于新增按量计费能力，未获授权所以未开通，API/db/Nginx/证书保持runbook主机侧与人工检查；该范围边界不阻塞验收。
+- D8.0～D8.4均已实施并通过用户人工验收，07生产部署设计正式关闭；不自动进入第五期，不自动提交Git。

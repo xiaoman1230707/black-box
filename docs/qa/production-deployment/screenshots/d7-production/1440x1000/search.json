@@ -1,0 +1,16 @@
+{
+  "page": "search",
+  "requested": "/search",
+  "bodyClientWidth": 1440,
+  "bodyScrollWidth": 1440,
+  "clientWidth": 1440,
+  "headings": [
+    "搜索玩家社区"
+  ],
+  "path": "/search",
+  "scrollWidth": 1440,
+  "searchInputs": 1,
+  "text": "Enter搜索玩家社区输入游戏、攻略或评测关键词开始搜索。",
+  "title": "black_box",
+  "console": []
+}

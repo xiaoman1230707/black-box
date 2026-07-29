@@ -1,0 +1,150 @@
+[
+  {
+    "page": "home",
+    "requested": "/",
+    "bodyClientWidth": 1425,
+    "bodyScrollWidth": 1425,
+    "clientWidth": 1425,
+    "headings": [
+      "热门帖子"
+    ],
+    "path": "/",
+    "scrollWidth": 1425,
+    "searchInputs": 1,
+    "text": "Enter《原神》5.0版本前瞻：纳塔地区全新探索《黑神话：悟空》深度评测Steam夏季特卖：20款史低游戏推荐内容全部资讯攻略求助评测活动游戏黑神话:悟空原神艾尔登法环塞尔达传说:王国之泪赛博朋克2077COMMUNITY FEED热门帖子共 10 篇评测往日之影剧情回看：忠诚、自由与选择代价往日之影最出色的不是任务规模，而是每个角色都带着可信的动机。选择没有完美答案，结局会让前面的对话重新获得意义。建议首周目少看攻略，接受自己的决定。爱爱睡觉的旅人201.2k玩家社区攻略",
+    "title": "black_box",
+    "console": []
+  },
+  {
+    "page": "search",
+    "requested": "/search",
+    "bodyClientWidth": 1440,
+    "bodyScrollWidth": 1440,
+    "clientWidth": 1440,
+    "headings": [
+      "搜索玩家社区"
+    ],
+    "path": "/search",
+    "scrollWidth": 1440,
+    "searchInputs": 1,
+    "text": "Enter搜索玩家社区输入游戏、攻略或评测关键词开始搜索。",
+    "title": "black_box",
+    "console": []
+  },
+  {
+    "page": "post-detail",
+    "requested": "/post/35",
+    "bodyClientWidth": 1440,
+    "bodyScrollWidth": 1440,
+    "clientWidth": 1440,
+    "headings": [
+      "往日之影剧情回看：忠诚、自由与选择代价",
+      "评论 (0)",
+      "还没有评论，来抢沙发吧"
+    ],
+    "path": "/post/35",
+    "scrollWidth": 1440,
+    "searchInputs": 0,
+    "text": "帖子详情评测往日之影剧情回看：忠诚、自由与选择代价爱爱睡觉的旅人发布于 2026/07/23往日之影最出色的不是任务规模，而是每个角色都带着可信的动机。选择没有完美答案，结局会让前面的对话重新获得意义。建议首周目少看攻略，接受自己的决定。201.2k评论 (0)还没有评论，来抢沙发吧",
+    "title": "black_box",
+    "console": []
+  },
+  {
+    "page": "compose",
+    "requested": "/compose",
+    "bodyClientWidth": 1425,
+    "bodyScrollWidth": 1425,
+    "clientWidth": 1425,
+    "headings": [
+      "暂无预览内容"
+    ],
+    "path": "/compose",
+    "scrollWidth": 1425,
+    "searchInputs": 0,
+    "text": "发布帖子分享你的攻略、见闻或问题。标题关联游戏（可选）不选择游戏内容类型（可选，可多选）配图（可选）选择帖子图片正文编辑预览MARKDOWNPREVIEW暂无预览内容在编辑区输入 Markdown 后，这里会同步显示最终效果。发布",
+    "title": "black_box",
+    "console": []
+  },
+  {
+    "page": "chat",
+    "requested": "/chat",
+    "bodyClientWidth": 1440,
+    "bodyScrollWidth": 1440,
+    "clientWidth": 1440,
+    "headings": [
+      "游戏攻略助手",
+      "从一个具体问题开始"
+    ],
+    "path": "/chat",
+    "scrollWidth": 1440,
+    "searchInputs": 0,
+    "text": "游戏攻略助手基于站内帖子回答你的游戏问题从一个具体问题开始例如角色养成、Boss 打法或资源规划。",
+    "title": "black_box",
+    "console": []
+  },
+  {
+    "page": "mine",
+    "requested": "/mine",
+    "bodyClientWidth": 1440,
+    "bodyScrollWidth": 1440,
+    "clientWidth": 1440,
+    "headings": [
+      "我的账户",
+      "个人内容"
+    ],
+    "path": "/mine",
+    "scrollWidth": 1440,
+    "searchInputs": 0,
+    "text": "我的账户管理当前账号与头像。账户摘要当前登录身份王修改头像王君ID: 6个人内容查看我发布和收藏的帖子。我的发布浏览我发布过的帖子我的收藏浏览我点赞过的帖子退出登录",
+    "title": "black_box",
+    "console": []
+  },
+  {
+    "page": "login",
+    "requested": "/login",
+    "bodyClientWidth": 1440,
+    "bodyScrollWidth": 1440,
+    "clientWidth": 1440,
+    "headings": [],
+    "path": "/login",
+    "scrollWidth": 1440,
+    "searchInputs": 0,
+    "text": "Black-box欢迎回来登录后继续你的游戏讨论。登录注册用户名密码立即登录暂不登录，回首页",
+    "title": "black_box",
+    "console": []
+  },
+  {
+    "page": "my-posts",
+    "requested": "/mine/posts",
+    "bodyClientWidth": 1440,
+    "bodyScrollWidth": 1440,
+    "clientWidth": 1440,
+    "headings": [
+      "我的发布",
+      "还没有发布过帖子"
+    ],
+    "path": "/mine/posts",
+    "scrollWidth": 1440,
+    "searchInputs": 0,
+    "text": "PERSONAL CONTENT我的发布查看我发布的帖子。共 0 篇还没有发布过帖子发布内容后会显示在这里。",
+    "title": "black_box",
+    "console": []
+  },
+  {
+    "page": "my-likes",
+    "requested": "/mine/likes",
+    "bodyClientWidth": 1440,
+    "bodyScrollWidth": 1440,
+    "clientWidth": 1440,
+    "headings": [
+      "我的收藏",
+      "还没有收藏帖子"
+    ],
+    "path": "/mine/likes",
+    "scrollWidth": 1440,
+    "searchInputs": 0,
+    "text": "PERSONAL CONTENT我的收藏查看我点赞过的帖子。共 0 篇还没有收藏帖子点赞过的帖子会显示在这里。",
+    "title": "black_box",
+    "console": []
+  }
+]

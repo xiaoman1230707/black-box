@@ -1,7 +1,7 @@
 # D1 部署文件与 one-hop 自动验证记录
 
 > 日期：2026-07-19
-> 状态：已实施、自动验证及用户人工验收通过，待独立提交授权
+> 状态：已实施、自动验证及用户人工验收通过，已按审查边界完成三个独立本地提交并关闭
 > 边界：仅本地施工与验证；未连接 ECS，未操作 Vercel/DNS，未启动真实生产数据库，未执行 migration/seed/embedding/AI，未暂存或提交 Git。
 
 ## 1. 发布源与保护证据
@@ -10,7 +10,7 @@
 - 暂存区：空。
 - `CLAUDE.md`：仍为用户未暂存改动；SHA-256 `A245212777880744CF2F052B909A6F157CF0E481A11D1B70147C85C8557C4445`，与 D0 一致。
 - `package.json`、两端 lockfile、Prisma schema/migrations、既有 Playwright：无 D1 diff。
-- 当前工作树不作为生产制品来源；D2 仍须从后续干净 `RELEASE_SHA` 重建。
+- D1 最终提交形成候选 `RELEASE_SHA=38247ff057310e0f98125a0bbcafbfab2969877c`；D2 仍须从该 SHA 的独立干净 worktree 重建。
 
 ## 2. 实际文件矩阵
 
@@ -77,7 +77,7 @@
 - command：`node dist/src/main.js`。
 - healthcheck：Node 原生 fetch 请求 `/api`，未安装 curl/wget。
 - OCI revision：O2 SHA；Node index/amd64 digest 标签与上表一致。
-- 镜像内检查：OpenSSL 3、bcrypt、sharp、Prisma Client 均可加载；4组 migration、4个编译初始化脚本、10张 demo fixture 均存在。
+- 镜像内检查：OpenSSL 3、bcrypt、sharp、Prisma Client 均可加载；3个 migration 目录、4个编译初始化脚本、10张 demo fixture 均存在。
 - 最终临时 archive：205,704,704 bytes；SHA-256 `7152DAC86E7230E339349C46CD6C42AA145305180363411BE03978AB6E7A8113`。该归档记录后已从临时目录删除，不是发布制品。
 
 ## 5. Compose、Nginx、Vercel 与脚本
@@ -140,4 +140,4 @@
 - D0保护清单仅`env.ts`、`env.spec.ts`、`main.ts`三项发生预期D1变化；package/lock、schema/migrations、e2e与原型哈希不变。`CLAUDE.md`仍是用户未暂存改动，SHA-256保持`A245212777880744CF2F052B909A6F157CF0E481A11D1B70147C85C8557C4445`。
 - 暂存区为空，`git diff --check`通过；无3000/5173监听，仅存在Playwright结束后的TIME_WAIT连接。
 
-D1 已由用户人工验收通过。当前仅进入三个独立提交的 staged diff 审查门禁；每个commit仍需明确授权，提交前不得进入D2。
+D1 已由用户人工验收并正式关闭。三个独立提交均已按审查范围创建，候选 `RELEASE_SHA` 为 `38247ff057310e0f98125a0bbcafbfab2969877c`；D2 仅获施工方案调研授权，尚未执行。

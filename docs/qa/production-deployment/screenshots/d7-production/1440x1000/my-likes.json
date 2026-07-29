@@ -1,0 +1,17 @@
+{
+  "page": "my-likes",
+  "requested": "/mine/likes",
+  "bodyClientWidth": 1440,
+  "bodyScrollWidth": 1440,
+  "clientWidth": 1440,
+  "headings": [
+    "我的收藏",
+    "还没有收藏帖子"
+  ],
+  "path": "/mine/likes",
+  "scrollWidth": 1440,
+  "searchInputs": 0,
+  "text": "PERSONAL CONTENT我的收藏查看我点赞过的帖子。共 0 篇还没有收藏帖子点赞过的帖子会显示在这里。",
+  "title": "black_box",
+  "console": []
+}

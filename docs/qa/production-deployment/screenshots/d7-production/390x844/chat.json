@@ -1,0 +1,17 @@
+{
+  "page": "chat",
+  "requested": "/chat",
+  "bodyClientWidth": 390,
+  "bodyScrollWidth": 390,
+  "clientWidth": 390,
+  "headings": [
+    "游戏攻略助手",
+    "从一个具体问题开始"
+  ],
+  "path": "/chat",
+  "scrollWidth": 390,
+  "searchInputs": 0,
+  "text": "游戏攻略助手基于站内帖子回答你的游戏问题从一个具体问题开始例如角色养成、Boss 打法或资源规划。",
+  "title": "black_box",
+  "console": []
+}

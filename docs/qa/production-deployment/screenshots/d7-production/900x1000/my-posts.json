@@ -1,0 +1,17 @@
+{
+  "page": "my-posts",
+  "requested": "/mine/posts",
+  "bodyClientWidth": 900,
+  "bodyScrollWidth": 900,
+  "clientWidth": 900,
+  "headings": [
+    "我的发布",
+    "还没有发布过帖子"
+  ],
+  "path": "/mine/posts",
+  "scrollWidth": 900,
+  "searchInputs": 0,
+  "text": "PERSONAL CONTENT我的发布查看我发布的帖子。共 0 篇还没有发布过帖子发布内容后会显示在这里。",
+  "title": "black_box",
+  "console": []
+}

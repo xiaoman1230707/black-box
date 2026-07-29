@@ -1,0 +1,16 @@
+{
+  "page": "compose",
+  "requested": "/compose",
+  "bodyClientWidth": 1425,
+  "bodyScrollWidth": 1425,
+  "clientWidth": 1425,
+  "headings": [
+    "暂无预览内容"
+  ],
+  "path": "/compose",
+  "scrollWidth": 1425,
+  "searchInputs": 0,
+  "text": "发布帖子分享你的攻略、见闻或问题。标题关联游戏（可选）不选择游戏内容类型（可选，可多选）配图（可选）选择帖子图片正文编辑预览MARKDOWNPREVIEW暂无预览内容在编辑区输入 Markdown 后，这里会同步显示最终效果。发布",
+  "title": "black_box",
+  "console": []
+}
